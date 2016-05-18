@@ -2,6 +2,7 @@
 **
 */
 #include "all.h"
+#include <jit/jit.h>
 
 static u3_noun _n_nock_on(u3_noun bus, u3_noun fol);
 
@@ -492,4 +493,96 @@ u3n_nock_an(u3_noun bus, u3_noun fol)
   u3_noun gul = u3nt(u3nt(1, 0, 0), 0, 0);  //  |=(a/{* *} ~)
 
   return u3n_nock_et(gul, bus, fol);
+}
+
+void u3nj_switch_trace(jit_function_t f, c3_o on_o)
+{
+  jit_label_t fin = jit_label_undefined;
+  jit_nint    off = offsetof(u3t_trace, far_o);
+  jit_value_t bas, val, yes, neg, bad;
+  if ( u3C.wag_w & u3o_debug_cpu )
+  {
+    bas = jit_value_create_nint_constant(f, jit_type_void_ptr, (jit_nint) &u3T);
+    val = jit_insn_load_relative(f, bas, off, jit_type_ubyte);
+    yes = jit_value_create_nint_constant(f, jit_type_ubyte, on_o);
+    neg = jit_value_create_nint_constant(f, jit_type_ubyte, !on_o);
+    bad = jit_insn_eq(f, yes, val);
+    jit_insn_branch_if_not(f, bad, &fin);
+    jit_insn_call_native(f, "abort", abort,
+        jit_type_create_signature(jit_abi_cdecl, jit_type_void, NULL, 0, 1),
+        NULL, 0, JIT_CALL_NORETURN);
+    jit_insn_label(f, &fin);
+    jit_insn_store_relative(f, bas, off, neg);
+  }
+}
+
+jit_value_t u3nj_at(jit_function_t f, jit_value_t bus, u3_noun a) {
+  c3_w*       buf_w;
+  c3_w        len_w, dep_w, i_w, a_w;
+  jit_label_t fin, bal;
+  jit_value_t bit, pom, off, ptr, nex, lom, c30, c3, mas, ret;
+
+  c3_assert(u3_none != a);
+  // FIXME: jitted code should assert b (its argument)
+  fin = jit_label_undefined;
+  ret = jit_value_create(f, jit_type_uint);
+
+#ifdef U3_CPU_DEBUG
+  u3nj_switch_trace(f, c3y);
+#endif
+
+  if ( 0 != a && !_(u3a_is_cell(a)) )
+  {
+    bal = jit_label_undefined;
+    lom = jit_value_create_nint_constant(
+        f, jit_type_void_ptr, (jit_nint) u3_Loom);
+    c30 = jit_value_create_nint_constant(f, jit_type_uint, 30);
+    c3  = jit_value_create_nint_constant(f, jit_type_uint, 3);
+    mas = jit_value_create_nint_constant(f, jit_type_uint, 0x3fffffff);
+
+    if ( _(u3a_is_cat(a)) )
+    {
+      buf_w = &a;
+      len_w = 1;
+    }
+    else
+    {
+      u3a_atom* tom_u = u3a_to_ptr(a);
+      buf_w = tom_u->buf_w;
+      len_w = tom_u->len_w;
+    }
+
+    jit_insn_store(f, ret, bus);
+
+    for ( i_w = 0; i_w < len_w; i_w++ )
+    {
+      a_w   = buf_w[len_w - (i_w + 1)];
+      dep_w = (i_w == 0 ? u3x_dep(a_w) : 32);
+      while ( dep_w )
+      {
+        bit = jit_insn_ushr(f, ret, c30);
+        pom = jit_insn_eq(f, bit, c3);
+        jit_insn_branch_if_not(f, pom, &bal);
+
+        off = jit_insn_and(f, ret, mas);
+        ptr = jit_insn_load_elem_address(f, lom, off, jit_type_uint);
+        nex = jit_insn_load_relative(f, ptr,
+          ((1 & (a_w >> --dep_w)) ? offsetof(u3a_cell, tel)
+                                  : offsetof(u3a_cell, hed)),
+          jit_type_uint);
+        jit_insn_store(f, ret, nex);
+      }
+    }
+    jit_insn_branch(f, &fin);
+    jit_insn_label(f, &bal);
+  }
+  jit_insn_store(f, ret,
+    jit_value_create_nint_constant(f, jit_type_uint, u3_none));
+  jit_insn_label(f, &fin);
+
+#ifdef U3_CPU_DEBUG
+  u3nj_switch_trace(f, c3n);
+#endif
+
+  return ret;
 }

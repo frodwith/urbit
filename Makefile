@@ -111,6 +111,7 @@ CFLAGS= $(COSFLAGS) $(DEBUGFLAGS) -ffast-math \
 	$(OPTLOCALINC) \
 	$(OPENSSLINC) \
 	-I$(INCLUDE) \
+	-Ioutside/libjit/include \
 	-Ioutside/$(LIBUV_VER)/include \
 	-Ioutside/anachronism/include \
 	-Ioutside/bpt \
@@ -381,6 +382,12 @@ LIBUV_MAKEFILE2=outside/$(LIBUV_VER)/config.log
 
 LIBUV=outside/$(LIBUV_VER)/.libs/libuv.a
 
+# Repeat this nonsense for libjit
+LIBJIT_MAKEFILE=outside/libjit/Makefile
+LIBJIT_MAKEFILE2=outside/libjit/config.log
+
+LIBJIT=outside/libjit/jit/.libs/libjit.a
+
 LIBRE2=outside/re2/obj/libre2.a
 
 LIBED25519=outside/ed25519/ed25519.a
@@ -431,6 +438,15 @@ $(LIBUV_MAKEFILE2): $(LIBUV_MAKEFILE)
 $(LIBUV): $(LIBUV_MAKEFILE) $(LIBUV_MAKEFILE2)
 	$(MAKE) -C outside/$(LIBUV_VER) all-am -j1
 
+# And again for libjit
+$(LIBJIT_MAKEFILE) $(LIBJIT_MAKEFILE2):
+	cd outside/libjit; ./bootstrap; ./configure --enable-shared=no
+
+$(LIBJIT_MAKEFILE2): $(LIBJIT_MAKEFILE)
+
+$(LIBJIT): $(LIBJIT_MAKEFILE) $(LIBJIT_MAKEFILE2)
+	$(MAKE) -C outside/libjit
+
 $(LIBRE2):
 	$(MAKE) -C outside/re2 obj/libre2.a
 
@@ -455,14 +471,14 @@ $(CRE2_OFILES): outside/cre2/src/src/cre2.cpp outside/cre2/src/src/cre2.h $(LIBR
 $(V_OFILES): include/vere/vere.h
 
 ifdef NO_SILENT_RULES
-$(BIN)/urbit: $(LIBCRE) $(LIBCOMMONMARK) $(VERE_OFILES) $(LIBUV) $(LIBRE2) $(LIBED25519) $(LIBANACHRONISM) $(LIBSCRYPT) $(LIBSOFTFLOAT)
+$(BIN)/urbit: $(LIBCRE) $(LIBCOMMONMARK) $(LIBJIT) $(VERE_OFILES) $(LIBUV) $(LIBRE2) $(LIBED25519) $(LIBANACHRONISM) $(LIBSCRYPT) $(LIBSOFTFLOAT)
 	mkdir -p $(BIN)
-	$(CLD) $(CLDOSFLAGS) -o $(BIN)/urbit $(VERE_OFILES) $(LIBUV) $(LIBCRE) $(LIBRE2) $(LIBED25519) $(LIBANACHRONISM) $(LIBS) $(LIBCOMMONMARK) $(LIBSCRYPT) $(LIBSOFTFLOAT)
+	$(CLD) $(CLDOSFLAGS) -o $(BIN)/urbit $(VERE_OFILES) $(LIBUV) $(LIBJIT) $(LIBCRE) $(LIBRE2) $(LIBED25519) $(LIBANACHRONISM) $(LIBS) $(LIBCOMMONMARK) $(LIBSCRYPT) $(LIBSOFTFLOAT)
 else
-$(BIN)/urbit: $(LIBCRE) $(LIBCOMMONMARK) $(VERE_OFILES) $(LIBUV) $(LIBRE2) $(LIBED25519) $(LIBANACHRONISM) $(LIBSCRYPT) $(LIBSOFTFLOAT)
+$(BIN)/urbit: $(LIBCRE) $(LIBCOMMONMARK) $(LIBJIT) $(VERE_OFILES) $(LIBUV) $(LIBRE2) $(LIBED25519) $(LIBANACHRONISM) $(LIBSCRYPT) $(LIBSOFTFLOAT)
 	@echo "    CCLD  $(BIN)/urbit"
 	@mkdir -p $(BIN)
-	@$(CLD) $(CLDOSFLAGS) -o $(BIN)/urbit $(VERE_OFILES) $(LIBUV) $(LIBCRE) $(LIBRE2) $(LIBED25519) $(LIBANACHRONISM) $(LIBS) $(LIBCOMMONMARK) $(LIBSCRYPT) $(LIBSOFTFLOAT)
+	@$(CLD) $(CLDOSFLAGS) -o $(BIN)/urbit $(VERE_OFILES) $(LIBUV) $(LIBJIT) $(LIBCRE) $(LIBRE2) $(LIBED25519) $(LIBANACHRONISM) $(LIBS) $(LIBCOMMONMARK) $(LIBSCRYPT) $(LIBSOFTFLOAT)
 endif
 
 tags: ctags etags gtags cscope
@@ -504,8 +520,9 @@ clean:
 
 # 'make distclean all -jn' ∀ n>1 still does not work because it is possible
 # Make will attempt to build urbit while it is also cleaning urbit..
-distclean: clean $(LIBUV_MAKEFILE)
+distclean: clean $(LIBUV_MAKEFILE) $(LIBJIT_MAKEFILE)
 	$(MAKE) -C outside/$(LIBUV_VER) distclean
+	$(MAKE) -C outside/libjit distclean
 	$(MAKE) -C outside/re2 clean
 	$(MAKE) -C outside/ed25519 clean
 	$(MAKE) -C outside/anachronism clean
