@@ -495,18 +495,27 @@ u3n_nock_an(u3_noun bus, u3_noun fol)
   return u3n_nock_et(gul, bus, fol);
 }
 
-static jit_type_t _nj_n2n = jit_type_create_signature(
-  jit_abi_cdecl, jit_type_uint, &jit_type_uint, 1, 1);
+static jit_type_t
+_nj_sig(c3_o ret_o, c3_w num_w)
+{
+  jit_type_t arg[10];
+  c3_w       i_w;
 
-static jit_type_t _nj_tnn_args[] = {jit_type_uint, jit_type_uint};
-static jit_type_t _nj_tnn = jit_type_create_signature(
-  jit_abi_cdecl, jit_type_uint, _nj_tnn_args, 2, 1);
+  assert(num_w < 10);
+
+  for ( i_w = 0; i_w < num_w; i_w++ ) {
+    arg[i_w] = jit_type_uint;
+  }
+  return jit_type_create_signature(
+    jit_abi_cdecl,
+    (_(ret_o) ? jit_type_uint : jit_type_void),
+    arg, num_w, 1);
+}
 
 static void
 _nj_bail(jit_function_t f, jit_value_t wit)
 {
-  static jit_type_t sig = jit_create_type_signature(
-    jit_abi_cdecl, jit_type_void, &jit_type_uint, 1, 1);
+  jit_type_t sig = _nj_sig(c3n, 1);
 
   jit_insn_call_native(
     f, "u3m_bail", u3m_bail, sig, &wit, 1, JIT_CALL_NORETURN);
@@ -515,11 +524,12 @@ _nj_bail(jit_function_t f, jit_value_t wit)
 static jit_value_t
 _nj_call_nock(jit_function_t f, jit_value_t bus, jit_value_t fol)
 {
+  jit_type_t sig = _nj_sig(c3y, 2);
   jit_value_t args[2];
   args[0] = bus;
   args[1] = fol;
   return jit_insn_call_native(
-    f, "_n_nock_on", _n_nock_on, _nj_tnn, args, 2, JIT_CALL_TAIL);
+    f, "_n_nock_on", _n_nock_on, sig, args, 2, JIT_CALL_TAIL);
 }
 
 static jit_value_t
@@ -531,15 +541,17 @@ _nj_w(jit_function_t f, c3_w i)
 static jit_value_t
 _nj_gain(jit_function_t f, jit_value_t a)
 {
+  jit_type_t sig = _nj_sig(c3y, 1);
   return jit_insn_call_native(
-    f, "u3a_gain", u3a_gain, _nj_n2n, &a, 1, JIT_CALL_NOTHROW);
+    f, "u3a_gain", u3a_gain, sig, &a, 1, JIT_CALL_NOTHROW);
 }
 
 static jit_value_t
 _nj_lose(jit_function_t f, jit_value_t a)
 {
+  jit_type_t sig = _nj_sig(c3y, 1);
   return jit_insn_call_native(
-    f, "u3a_lose", u3a_lose, _nj_n2n, &a, 1, JIT_CALL_NOTHROW);
+    f, "u3a_lose", u3a_lose, sig, &a, 1, JIT_CALL_NOTHROW);
 }
 
 // jitted function has C boolean semtantics, not loobean
@@ -553,11 +565,12 @@ _nj_du(jit_function_t f, jit_value_t a)
 static jit_value_t
 _nj_cell(jit_function_t f, jit_value_t a, jit_value_t b)
 {
+  jit_type_t sig = _nj_sig(c3y, 2);
   jit_value_t args[2];
   args[0] = a;
   args[1] = b;
   return jit_insn_call_native(
-    f, "u3i_cell", u3i_cell, _nj_tnn, args, 2, JIT_CALL_NOTHROW);
+    f, "u3i_cell", u3i_cell, sig, args, 2, JIT_CALL_NOTHROW);
 }
 
 static jit_value_t
@@ -586,7 +599,7 @@ _nj_t(jit_function_t f, jit_value_t a)
 static void
 _nj_switch_trace(jit_function_t f, jit_nint off, c3_o on_o)
 {
-  static jit_type_t sig = jit_type_create_signature(
+  jit_type_t sig = jit_type_create_signature(
       jit_abi_cdecl, jit_type_void, NULL, 0, 1);
 
   jit_label_t fin = jit_label_undefined;
@@ -648,8 +661,8 @@ _nj_at(jit_function_t f, u3_noun a, jit_value_t b) {
         jit_insn_branch_if_not(f, _nj_du(f, ret), &bal);
         jit_insn_store(f, ret,
           (1 & (a_w >> --dep_w))
-          ? _nj_t(ret)
-          : _nj_h(ret));
+          ? _nj_t(f, ret)
+          : _nj_h(f, ret));
       }
     }
     jit_insn_branch(f, &fin);
@@ -668,19 +681,17 @@ _nj_at(jit_function_t f, u3_noun a, jit_value_t b) {
 static jit_value_t
 _nj_nock(jit_function_t f, jit_value_t bus, u3_noun fol)
 {
-  static c3_w noo_w = offsetof(u3a_road, pro) + offsetof(u3a_road.pro, nox_d);
+  static c3_w noo_w = offsetof(u3a_road, pro.nox_d);
   u3_noun     hib   = u3h(fol),
-              tal   = u3t(fol);
+              gal   = u3t(fol);
   jit_value_t rod   = jit_value_create_nint_constant(
     f, jit_type_void_ptr, (jit_nint) u3R);
 
   while ( 1 ) {
     // u3R->pro.nox_d += 1;
-    jit_insn_store_relative(f, rod, 
-      jit_insn_add(f,
-        jit_value_create_nint_constant(f, jit_type_ulong, 1),
-        jit_insn_load_relative(f, rod, noo_w, jit_type_ulong)),
-      noo_w, jit_type_ulong);
+    jit_insn_store_relative(f, rod, noo_w,
+      jit_insn_add(f, _nj_w(f, 1),
+        jit_insn_load_relative(f, rod, noo_w, jit_type_ulong)));
 
     if ( c3y == u3r_du(hib) ) {
       jit_value_t poz, riv;
@@ -691,11 +702,11 @@ _nj_nock(jit_function_t f, jit_value_t bus, u3_noun fol)
       return _nj_cell(f, poz, riv);
     }
     else switch ( hib ) {
-      default: return u3m_bail(c3__exit);
+      default: u3m_bail(c3__exit);
 
       case 0: {
         if ( c3n == u3r_ud(gal) ) {
-          return u3m_bail(c3__exit);
+          u3m_bail(c3__exit);
         }
         else {
           jit_value_t ret = _nj_at(f, gal, bus);
@@ -737,11 +748,12 @@ _nj_nock(jit_function_t f, jit_value_t bus, u3_noun fol)
       c3_assert(!"not reached");
 
       case 4: {
+        jit_type_t sig = _nj_sig(c3y, 1);
         jit_value_t gof, pro;
 
         gof = _nj_nock(f, bus, u3k(gal));
         pro = jit_insn_call_native(
-          f, "u3i_vint", u3i_vint, _nj_n2n, &gof, 1, JIT_CALL_NOTHROW);
+          f, "u3i_vint", u3i_vint, sig, &gof, 1, JIT_CALL_NOTHROW);
 
         _nj_lose(f, gof);
         u3a_lose(fol);
@@ -751,13 +763,14 @@ _nj_nock(jit_function_t f, jit_value_t bus, u3_noun fol)
       c3_assert(!"not reached");
 
       case 5: {
+        jit_type_t sig = _nj_sig(c3y, 2);
         jit_value_t wim, pro, args[2];
 
         wim     = _nj_nock(f, bus, u3k(gal));
-        args[0] = _nj_h(wim);
-        args[1] = _nj_t(wim);
+        args[0] = _nj_h(f, wim);
+        args[1] = _nj_t(f, wim);
         pro     = jit_insn_call_native(
-          f, "u3r_sing", u3r_sing, _nj_tnn, args, 2, JIT_CALL_NOTHROW);
+          f, "u3r_sing", u3r_sing, sig, args, 2, JIT_CALL_NOTHROW);
 
         _nj_lose(f, wim);
         u3a_lose(fol);
@@ -771,25 +784,25 @@ _nj_nock(jit_function_t f, jit_value_t bus, u3_noun fol)
 
         u3x_trel(gal, &b_gal, &c_gal, &d_gal);
         {
-          jit_value_t tys = _nj_nock(_nj_gain(f, bus), u3k(b_gal)),
+          jit_value_t tys = _nj_nock(f, _nj_gain(f, bus), u3k(b_gal)),
                       nex = jit_value_create(f, jit_type_uint);
           jit_label_t one = jit_label_undefined,
                       fin = jit_label_undefined,
-                      bal = jit_label_undefinedr;
+                      bal = jit_label_undefined;
 
           jit_insn_branch_if(f, tys, &one);
           jit_insn_store(f, nex, _nj_nock(f, bus, u3k(c_gal)));
-          jit_insn_branch(&fin);
+          jit_insn_branch(f, &fin);
 
-          jit_insn_label(&one);
-          jit_insn_branch_if_not(f, jit_insn_eq(tys, _nj_w(f, 1)), &bal);
+          jit_insn_label(f, &one);
+          jit_insn_branch_if_not(f, jit_insn_eq(f, tys, _nj_w(f, 1)), &bal);
           jit_insn_store(f, nex, _nj_nock(f, bus, u3k(d_gal)));
-          jit_insn_branch(&fin);
+          jit_insn_branch(f, &fin);
 
-          jit_insn_label(&bal);
-          _nj_bail(f, _nj_w(c3__exit));
+          jit_insn_label(f, &bal);
+          _nj_bail(f, _nj_w(f, c3__exit));
 
-          jit_insn_label(&fin);
+          jit_insn_label(f, &fin);
           u3a_lose(fol);
           return nex;
         }
@@ -817,8 +830,8 @@ _nj_nock(jit_function_t f, jit_value_t bus, u3_noun fol)
 
         u3x_cell(gal, &b_gal, &c_gal);
         {
-          jit_value_t heb = _nj_nock(_nj_gain(f, bus), u3k(b_gal));
-          jit_value_t bod = _nj_cell(heb, bus);
+          jit_value_t heb = _nj_nock(f, _nj_gain(f, bus), u3k(b_gal));
+          jit_value_t bod = _nj_cell(f, heb, bus);
           u3_noun     nex = u3k(c_gal);
 
           u3a_lose(fol);
@@ -830,23 +843,24 @@ _nj_nock(jit_function_t f, jit_value_t bus, u3_noun fol)
       c3_assert(!"not reached");
 
       case 9: {
+        jit_type_t sig = _nj_sig(c3y, 2);
         u3_noun b_gal, c_gal;
 
         u3x_cell(gal, &b_gal, &c_gal);
         {
-          jit_value_t pro, nun, seb, args[2];
+          jit_value_t pro, nun, seb, nex, args[2];
           jit_label_t fin = jit_label_undefined;
 
           if ( c3n == u3r_ud(b_gal) ) {
-            return u3m_bail(c3__exit);
+            u3m_bail(c3__exit);
           }
          
           _nj_switch_trace(f, offsetof(u3t_trace, noc_o), c3n);
 
-          args[0] = seb = _nj_nock(bus, u3k(c_gal));
+          args[0] = seb = _nj_nock(f, bus, u3k(c_gal));
           args[1] = _nj_w(f, b_gal);
           pro     = jit_insn_call_native(
-            f, "u3j_kick", u3j_kick, _nj_n2n, args, 2, JIT_CALL_NOTHROW);
+            f, "u3j_kick", u3j_kick, sig, args, 2, JIT_CALL_NOTHROW);
 
           _nj_switch_trace(f, offsetof(u3t_trace, noc_o), c3y);
 
@@ -856,7 +870,7 @@ _nj_nock(jit_function_t f, jit_value_t bus, u3_noun fol)
           nex = _nj_gain(f, _nj_at(f, b_gal, seb));
           pro = _nj_call_nock(f, seb, nex);
 
-          jit_insn_label(&fin);
+          jit_insn_label(f, &fin);
           u3a_lose(fol);
           return pro;
         }
@@ -871,11 +885,7 @@ _nj_nock(jit_function_t f, jit_value_t bus, u3_noun fol)
           u3_noun     zep, nex;
           jit_value_t hod, args[4];
 
-          static jit_type_t
-            sar[] = {jit_type_uint, jit_type_uint,
-                     jit_type_uint, jit_type_uint},
-            sig   = jit_type_create_signature(
-              jit_abi_cdecl, jit_type_uint, sar, 4, 1);
+          jit_type_t sig = _nj_sig(c3y, 4);
 
           if ( c3y == u3r_du(p_gal) ) {
             u3_noun b_gal = u3h(p_gal);
@@ -883,7 +893,7 @@ _nj_nock(jit_function_t f, jit_value_t bus, u3_noun fol)
             u3_noun d_gal = q_gal;
 
             zep = u3k(b_gal);
-            hod = _nj_nock(_nj_gain(f,bus), u3k(c_gal));
+            hod = _nj_nock(f, _nj_gain(f,bus), u3k(c_gal));
             nex = u3k(d_gal);
           }
           else {
@@ -905,40 +915,46 @@ _nj_nock(jit_function_t f, jit_value_t bus, u3_noun fol)
       }
 
       case 11: {
-        jit_label_t one, two;
-        jit_value_t ref = _nj_nock(_nj_gain(f, bus), u3k(u3h(gal))),
-                    gof = _nj_nock(bus, u3k(u3t(gal))),
+        jit_label_t one, two, fin;
+        jit_value_t ref = _nj_nock(f, _nj_gain(f, bus), u3k(u3h(gal))),
+                    gof = _nj_nock(f, bus, u3k(u3t(gal))),
                     val, oop, pro, args[2];
 
-        static jit_type_t sig = jit_type_create_signature(
-            jit_abi_cdecl, jit_type_void, &jit_type_uint, 1, 1);
+        jit_type_t push_sig = _nj_sig(c3n, 1),
+                          soft_sig = _nj_sig(c3y, 2),
+                          mush_sig = _nj_sig(c3y, 1);
 
         _nj_switch_trace(f, offsetof(u3t_trace, noc_o), c3n);
         args[0] = ref;
         args[1] = _nj_gain(f, gof);
         val = jit_insn_call_native(f, "u3m_soft_esc", u3m_soft_esc,
-            _nj_tnn, rgs, 2, JIT_CALL_NOTHROW);
+            soft_sig, args, 2, JIT_CALL_NOTHROW);
         _nj_switch_trace(f, offsetof(u3t_trace, noc_o), c3y);
 
         jit_insn_branch_if_not(f, _nj_du(f, val), &one);
-        jit_insn_branch_if_not(f, _nj_du(f, _nj_t(val)), &two);
+        jit_insn_branch_if_not(f, _nj_du(f, _nj_t(f, val)), &two);
 
         _nj_lose(f, gof);
         pro = _nj_gain(f, _nj_t(f, _nj_t(f, val)));
-        _nj_lose(val);
+        _nj_lose(f, val);
+        jit_insn_branch(f, &fin);
 
-        jit_insn_label(&one);
-        oop = _nj_cell(_nj_w(f, 1), _nj_cell(gof, _nj_w(f, 0)))
+        jit_insn_label(f, &one);
+        oop = _nj_cell(f, _nj_w(f, 1), _nj_cell(f, gof, _nj_w(f, 0)));
         _nj_bail(f, oop);
 
-        jit_insn_label(&two);
-        oop = _nj_cell(
-          _nj_w(f, c3__hunk)
-          jit_insn_call_native(f, "_n_mush", _nj_n2n, &gof, 1));
-        jit_insn_call_native(f, "u3t_push", u3t_push, sig, &oop, 1);
-        _nj_bail(_nj_w(f, c3__exit));
+        jit_insn_label(f, &two);
+        oop = _nj_cell(f,
+          _nj_w(f, c3__hunk),
+          jit_insn_call_native(
+            f, "_n_mush", _n_mush, mush_sig, &gof, 1, JIT_CALL_NOTHROW));
+        jit_insn_call_native(
+            f, "u3t_push", u3t_push, push_sig, &oop, 1, JIT_CALL_NOTHROW);
+        _nj_bail(f, _nj_w(f, c3__exit));
 
-        u3_lose(fol);
+        jit_insn_label(f, &fin);
+
+        u3a_lose(fol);
         return pro;
       }  
       c3_assert(!"not reached");
