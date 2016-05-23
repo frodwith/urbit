@@ -163,6 +163,10 @@
         struct {                              //  memoization
           u3p(u3h_root) har_p;                //  (map (pair term noun) noun)
         } cax;
+
+        struct {                              //  jit
+          u3p(u3h_root) har_p;                //  (map batt noun)
+        } jic;
       } u3a_road;
       typedef u3a_road u3_road;
 

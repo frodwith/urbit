@@ -457,6 +457,7 @@ static void
 _pave_parts(void)
 {
   u3R->cax.har_p = u3h_new();
+  u3R->jic.har_p = u3h_new();
   u3R->jed.har_p = u3h_new();
   u3R->jed.das = u3_nul;
 }
@@ -797,12 +798,14 @@ u3m_love(u3_noun pro)
   {
     u3_noun das         = u3R->jed.das;
     u3p(u3h_root) har_p = u3R->jed.har_p;
+    u3p(u3h_root) jic_p = u3R->jic.har_p;
 
     u3m_fall();
 
     pro = u3a_take(pro);
 
     u3j_reap(das, har_p);
+    u3n_note(jic_p);
 
     u3R->cap_p = u3R->ear_p;
     u3R->ear_p = 0;
@@ -1520,6 +1523,10 @@ u3m_boot(c3_o nuu_o, c3_o bug_o, c3_c* dir_c)
   /* Initialize the jet system.
   */
   u3j_boot();
+
+  /* Intialize the jit system.
+  */
+  u3n_boot_jit();
 
   /* Install or reactivate the kernel.
   */
