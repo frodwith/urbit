@@ -476,6 +476,7 @@ u3m_mark(void)
   tot_w += u3a_mark_noun(u3R->pro.don);
   tot_w += u3a_mark_noun(u3R->pro.day);
   tot_w += u3h_mark(u3R->cax.har_p);
+  tot_w += u3h_mark(u3R->jic.har_p);
   return tot_w;
 }
 
@@ -507,6 +508,7 @@ void
 u3m_clear(void)
 {
   u3h_free(u3R->cax.har_p);
+  u3h_free(u3R->jic.har_p);
   u3h_free(u3R->jed.har_p);
   u3a_lose(u3R->jed.das);
 }
