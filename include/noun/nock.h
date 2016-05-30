@@ -54,12 +54,22 @@
       u3_noun
       u3n_nock_an(u3_noun bus, u3_noun fol);
 
-    /* u3n_note(): promote jit notes during u3m_love()
-    */
-      void
-      u3n_note(u3p(u3h_root) har_p);
-
     /* u3n_boot_jit(): initialize jit state
     */
       void
       u3n_boot_jit(void);
+
+    /* u3n_heat(): compile formulas on outer road during u3m_love
+    */
+      void
+      u3n_heat(u3p(u3h_root) fit, u3p(u3h_root) tif, u3_chit nex);
+
+    /* u3n_compile(): get a chit to pass to u3n_nock_chit
+    */
+      u3_chit
+      u3n_compile(u3_noun fol);
+
+    /* u3n_nock_chit(): nock a chit against bus
+    */
+      u3_noun
+      u3n_nock_chit(u3_noun bus, u3_chit jit);

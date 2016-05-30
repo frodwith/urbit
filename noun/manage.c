@@ -457,8 +457,9 @@ static void
 _pave_parts(void)
 {
   u3R->cax.har_p = u3h_new();
-  u3R->jic.har_p = u3h_new();
   u3R->jed.har_p = u3h_new();
+  u3R->jis.fit = u3h_new();
+  u3R->jis.tif = u3h_new();
   u3R->jed.das = u3_nul;
 }
 
@@ -476,7 +477,8 @@ u3m_mark(void)
   tot_w += u3a_mark_noun(u3R->pro.don);
   tot_w += u3a_mark_noun(u3R->pro.day);
   tot_w += u3h_mark(u3R->cax.har_p);
-  tot_w += u3h_mark(u3R->jic.har_p);
+  tot_w += u3h_mark(u3R->jis.tif);
+  tot_w += u3h_mark(u3R->jis.fit);
   return tot_w;
 }
 
@@ -746,6 +748,7 @@ u3m_leap(c3_w pad_w)
   /* Set up the new road.
   */
   {
+    rod_u->jis.nex = u3R->jis.nex;
     u3R = rod_u;
     _pave_parts();
   }
@@ -800,14 +803,16 @@ u3m_love(u3_noun pro)
   {
     u3_noun das         = u3R->jed.das;
     u3p(u3h_root) har_p = u3R->jed.har_p;
-    u3p(u3h_root) jic_p = u3R->jic.har_p;
+    u3p(u3h_root) fit   = u3R->jis.fit;
+    u3p(u3h_root) tif   = u3R->jis.tif;
+    u3_chit       nex   = u3R->jis.nex;
 
     u3m_fall();
 
     pro = u3a_take(pro);
 
     u3j_reap(das, har_p);
-    u3n_note(jic_p);
+    u3n_heat(fit, tif, nex);
 
     u3R->cap_p = u3R->ear_p;
     u3R->ear_p = 0;

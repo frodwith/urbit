@@ -8,15 +8,13 @@
 
 static struct {
   jit_context_t cex;
-  u3p(u3h_root) har_p;
   c3_w          hop;   /* prev allocated size of hot  */
   c3_w          hos;   /* allocated size of hot       */
-  c3_w          top;   /* highest filled index of hot */
-  u3_funk*      hot;   /* array of function pointers  */
+  u3_chit       top;
+  u3_funk*      hot;
 } u3n_Jit;
 
 static u3_noun _n_nock_on(u3_noun bus, u3_noun fol);
-static u3_noun _n_nock_jit(u3_noun bus, u3_noun fol);
 static jit_value_t _nj_nock(jit_function_t f, jit_value_t bus, u3_noun fol);
 
       /* u3_term_io_hija(): hijack console for cooked print.
@@ -205,11 +203,6 @@ static u3_noun
 _n_nock_on(u3_noun bus, u3_noun fol)
 {
   u3_noun hib, gal;
-  u3_noun jit = _n_nock_jit(bus, fol);
-
-  if ( u3_none != jit ) {
-    return jit;
-  }
 
   while ( 1 ) {
     hib = u3h(fol);
@@ -552,22 +545,18 @@ _nj_nat(jit_function_t f, const char *name,
 static void
 _nj_bail(jit_function_t f, jit_value_t wit)
 {
-  jit_type_t sig = _nj_sig(c3n, 1);
-
   jit_insn_call_native(
-    f, "u3m_bail", u3m_bail, sig, &wit, 1, JIT_CALL_NORETURN);
+    f, "u3m_bail", u3m_bail, _nj_sig(c3n, 1), &wit, 1, JIT_CALL_NORETURN);
 }
 
-/* NOTE: only call this in tail position. */
 static jit_value_t
 _nj_call_nock(jit_function_t f, jit_value_t bus, jit_value_t fol)
 {
-  jit_type_t sig = _nj_sig(c3y, 2);
-  jit_value_t args[2];
-  args[0] = bus;
-  args[1] = fol;
-  return jit_insn_call_native(
-    f, "_n_nock_on", _n_nock_on, sig, args, 2, JIT_CALL_TAIL);
+  // NOTHROW is not appropriate, since we'll be jitting and may throw.
+  jit_value_t jit = jit_insn_call_native(
+    f, "u3n_compile", u3n_compile, _nj_sig(c3y, 1), &fol, 1, 0);
+
+  return _nj_nat(f, "u3n_nock_chit", u3n_nock_chit, c3y, 2, bus, jit);
 }
 
 static jit_value_t
@@ -582,60 +571,16 @@ _nj_p(jit_function_t f, void *p)
   return jit_value_create_nint_constant(f, jit_type_void_ptr, (jit_nint) p);
 }
 
-/*
-static void
-_n_ref(u3_noun a)
-{
-  if (_(u3a_is_cat(a))) {
-    printf("cat\n");
-  }
-  else {
-    c3_w* dog_w = u3a_to_ptr(a);
-    u3a_box* box_u = u3a_botox(dog_w);
-    printf("dog: %d\n", box_u->use_w);
-  }
-}
-
-static void
-_nj_ref(jit_function_t f, jit_value_t a)
-{
-  _nj_nat(f, "_n_ref", _n_ref, c3n, 1, a);
-}
-
-static void
-_nj_squawk(jit_function_t f, char *noise)
-{
-  jit_type_t sarg[] = {jit_type_void_ptr};
-  jit_value_t arg[1];
-  jit_type_t sig = jit_type_create_signature(
-    jit_abi_cdecl, jit_type_void, sarg, 1, 1);
-
-  arg[0] = _nj_p(f, noise);
-  jit_insn_call_native(f, "puts", puts, sig, arg, 1, JIT_CALL_NOTHROW);
-}
-*/
-
 static jit_value_t
 _nj_gain(jit_function_t f, jit_value_t a)
 {
   return _nj_nat(f, "u3k", u3a_gain, c3y, 1, a);
 }
 
-#if 0
-#define _nj_lose(f, a) _nj_lose_imp(f, a, __LINE__)
-
-static void
-_n_lose(u3_noun a, int line)
-{
-  printf("lose %u at %d\n", a, line);
-  u3a_lose(a);
-}
-#endif
 static void
 _nj_lose(jit_function_t f, jit_value_t a)
 {
   _nj_nat(f, "u3z", u3a_lose, c3n, 1, a);
-  //_nj_nat(f, "u3z", _n_lose, c3n, 2, a, _nj_w(f, line));
 }
 
 static jit_value_t
@@ -768,33 +713,12 @@ _nj_at(jit_function_t f, u3_noun a, jit_value_t b) {
   return ret;
 }
 
-/*
-static void
-_nj_dump(jit_function_t f, jit_value_t a)
-{
-  jit_type_t sarg[] = {jit_type_uint};
-  jit_type_t parg[] = {jit_type_void_ptr, jit_type_void_ptr};
-  jit_value_t arg[2];
-  arg[0] = a;
-  jit_value_t pet = jit_insn_call_native(f, "u3m_pretty",
-    u3m_pretty, jit_type_create_signature(
-      jit_abi_cdecl, jit_type_void_ptr, sarg, 1, 1),
-    arg, 1, JIT_CALL_NOTHROW);
-  arg[0] = _nj_p(f, "%s\r\n");
-  arg[1] = pet;
-  jit_insn_call_native(f, "printf", printf, jit_type_create_signature(
-      jit_abi_cdecl, jit_type_void, parg, 2, 1),
-      arg, 2, JIT_CALL_NOTHROW);
-}
-*/
-
 static jit_value_t
 _nj_hint(jit_function_t f,
   u3_noun zep, jit_value_t hod, jit_value_t bus, u3_noun nex)
 {
   switch ( zep ) {
     default: {
-      //_nj_squawk(f, "weird zep");
       _nj_lose(f, hod);
       return _nj_nock(f, bus, nex);
     }
@@ -805,8 +729,7 @@ _nj_hint(jit_function_t f,
     case c3__spot: {
       jit_value_t pro, tac;
 
-      //_nj_squawk(f, "spot");
-      tac = _nj_cell(f, _nj_gain(f, _nj_w(f, u3k(zep))), hod);
+      tac = _nj_cell(f,  _nj_w(f, zep), hod);
 
       _nj_nat(f, "u3t_push", u3t_push, c3n, 1, tac);
       pro = _nj_nock(f, bus, nex);
@@ -818,7 +741,6 @@ _nj_hint(jit_function_t f,
     case c3__live: {
       jit_label_t one, two;
 
-      //_nj_squawk(f, "live");
       jit_insn_branch_if_not(f, _nj_du(f, hod), &one);
 
       _nj_switch_noc(f, c3n);
@@ -834,7 +756,6 @@ _nj_hint(jit_function_t f,
     }
 
     case c3__slog: {
-      //_nj_squawk(f, "slog");
       if ( !(u3C.wag_w & u3o_quiet) ) {
         _nj_switch_noc(f, c3n);
         _nj_nat(f, "u3t_slog", u3t_slog, c3n, 1, hod);
@@ -844,7 +765,6 @@ _nj_hint(jit_function_t f,
     }
 
     case c3__germ: {
-      //_nj_squawk(f, "germ");
       jit_label_t one, fin;
       jit_value_t pro;
       
@@ -866,7 +786,6 @@ _nj_hint(jit_function_t f,
     case c3__fast: {
       jit_value_t pro; 
       
-      //_nj_squawk(f, "fast");
       pro = _nj_nock(f, bus, nex);
 
       _nj_switch_noc(f, c3n);
@@ -880,7 +799,6 @@ _nj_hint(jit_function_t f,
       jit_label_t fin;
       jit_value_t pro, jnx, out, roa, rod, mot;
 
-      //_nj_squawk(f, "memo");
       _nj_lose(f, hod);
 
       mot = _nj_w(f, c3__nock);
@@ -905,7 +823,6 @@ _nj_hint(jit_function_t f,
     }
 
     case c3__sole: {
-      //_nj_squawk(f, "sole");
       _nj_lose(f, hod);
       return _nj_nock(f, bus, nex);
     }
@@ -932,7 +849,6 @@ _nj_nock(jit_function_t f, jit_value_t bus, u3_noun fol)
   gal = u3t(fol);
 
   if ( c3y == u3r_du(hib) ) {
-    //_nj_squawk(f, "autocons");
     jit_value_t poz, riv;
 
     poz = _nj_nock(f, _nj_gain(f, bus), hib);
@@ -940,7 +856,6 @@ _nj_nock(jit_function_t f, jit_value_t bus, u3_noun fol)
 
     return _nj_cell(f, poz, riv); 
   }
-  //_nj_squawk(f, u3m_pretty(hib));
   switch ( hib ) {
     default: u3m_bail(c3__exit);
 
@@ -954,14 +869,12 @@ _nj_nock(jit_function_t f, jit_value_t bus, u3_noun fol)
         return ret;
       }
     }
-    c3_assert(!"not reached");
 
     case 1: {
       jit_value_t qot = _nj_gain(f, _nj_w(f, u3k(gal)));
       _nj_lose(f, bus);
       return qot;
     }
-    c3_assert(!"not reached");
 
     case 2: {
       jit_value_t poz, riv;
@@ -970,7 +883,6 @@ _nj_nock(jit_function_t f, jit_value_t bus, u3_noun fol)
 
       return _nj_call_nock(f, poz, riv);
     }
-    c3_assert(!"not reached");
 
     case 3: {
       jit_value_t gof, pro;
@@ -981,7 +893,6 @@ _nj_nock(jit_function_t f, jit_value_t bus, u3_noun fol)
 
       return pro;
     }
-    c3_assert(!"not reached");
 
     case 4: {
       jit_value_t gof, pro;
@@ -991,7 +902,6 @@ _nj_nock(jit_function_t f, jit_value_t bus, u3_noun fol)
 
       return pro;
     }
-    c3_assert(!"not reached");
 
     case 5: {
       jit_value_t wim, pro;
@@ -1002,7 +912,6 @@ _nj_nock(jit_function_t f, jit_value_t bus, u3_noun fol)
 
       return pro;
     }
-    c3_assert(!"not reached");
 
     case 6: {
       u3_noun b_gal, c_gal, d_gal;
@@ -1033,7 +942,6 @@ _nj_nock(jit_function_t f, jit_value_t bus, u3_noun fol)
         return nex;
       }
     }
-    c3_assert(!"not reached");
 
     case 7: {
       u3_noun b_gal, c_gal;
@@ -1043,7 +951,6 @@ _nj_nock(jit_function_t f, jit_value_t bus, u3_noun fol)
         return _nj_nock(f, _nj_nock(f, bus, b_gal), c_gal);
       }
     }
-    c3_assert(!"not reached");
 
     case 8: {
       u3_noun b_gal, c_gal;
@@ -1054,7 +961,6 @@ _nj_nock(jit_function_t f, jit_value_t bus, u3_noun fol)
         return _nj_nock(f, _nj_cell(f, heb, bus), c_gal);
       }
     }
-    c3_assert(!"not reached");
 
     case 9: {
       u3_noun b_gal, c_gal;
@@ -1084,7 +990,6 @@ _nj_nock(jit_function_t f, jit_value_t bus, u3_noun fol)
         return pro;
       }
     }
-    c3_assert(!"not reached");
 
     case 10: {
       u3_noun p_gal, q_gal;
@@ -1143,7 +1048,6 @@ _nj_nock(jit_function_t f, jit_value_t bus, u3_noun fol)
       jit_insn_label(f, &fin);
       return pro;
     }  
-    c3_assert(!"not reached");
   }
 }
 
@@ -1151,108 +1055,130 @@ void
 u3n_boot_jit()
 {
   u3n_Jit.cex   = jit_context_create();
-  u3n_Jit.har_p = u3h_new();
   u3n_Jit.top   = 0;
   u3n_Jit.hos   = 987; /* fib(16) */
   u3n_Jit.hop   = 610; /* fib(15) */
   u3n_Jit.hot   = malloc(987 * sizeof(u3_funk));
+  u3R->jis.nex  = 0;
 }
 
-c3_w
+static u3_funk
 _n_compile(u3_noun fol)
 {
   jit_function_t f;
-  jit_context_t  c = u3n_Jit.cex;
-  c3_w           inx_w = u3n_Jit.top++;
-
+  jit_context_t  c;
+  c = u3n_Jit.cex;
   jit_context_build_start(c);
   f = jit_function_create(c, _nj_sig(c3y, 1));
   jit_insn_return(f, _nj_nock(f, jit_value_get_param(f, 0), fol));
   jit_context_build_end(c);
   jit_function_compile(f);
-
-  u3n_Jit.hot[inx_w] = jit_function_to_closure(f);
-
-  if ( u3n_Jit.top >= u3n_Jit.hos ) {
-    c3_w hop = u3n_Jit.hop,
-         hos = u3n_Jit.hos,
-         siz = hop + hos;
-    u3n_Jit.hot = realloc(u3n_Jit.hot, siz * sizeof(u3_funk));
-    u3n_Jit.hop = hos;
-    u3n_Jit.hos = siz;
-  }
-
-  u3h_put(u3n_Jit.har_p, fol, inx_w);
-  u3z(fol);
-  return inx_w;
+  return jit_function_to_closure(f);
 }
 
 static void
-_n_note_kev(u3_noun kev)
+_n_grow_hot(c3_w top)
 {
-  u3_noun fol = u3h(kev);
-  u3_noun not = u3t(kev);
-  u3_noun lof = u3a_take(fol);
+  c3_w hos = u3n_Jit.hos;
+  c3_w hop = u3n_Jit.hop;
 
-  if ( u3R == &(u3H->rod_u) ) {
-    _n_compile(lof);
+  while ( top >= hos ) {
+    c3_w siz = hop + hos;
+    hop = hos;
+    hos = siz;
   }
-  else {
-    u3_noun got = u3h_get(u3R->jic.har_p, lof);
-    if ( u3_none != got ) {
-      not += got;
+
+  u3n_Jit.hos = hos;
+  u3n_Jit.hop = hop;
+  u3n_Jit.top = top;
+  u3n_Jit.hot = realloc(u3n_Jit.hot, hos * sizeof(u3_funk));
+}
+
+u3_chit
+u3n_compile(u3_noun fol)
+{
+  u3a_road* rod_u;
+  u3_chit   jit;
+
+  for ( rod_u = u3R; rod_u; rod_u = u3tn(u3_road, rod_u->par_p) ) {
+    jit = u3h_get(rod_u->jis.fit, fol);
+    if (jit != u3_none) {
+      return jit;
     }
-    u3h_put(u3R->jic.har_p, lof, not);
-    u3z(lof);
   }
+
+  jit = u3R->jis.nex++;
+  u3h_put(u3R->jis.fit, fol, jit);
+  u3h_put(u3R->jis.tif, jit, fol);
+
+  if (u3R == &(u3H->rod_u)) {
+    _n_grow_hot(jit);
+    u3n_Jit.hot[jit] = _n_compile(fol);
+  }
+
+  return jit;
+}
+
+u3_noun
+u3n_nock_chit(u3_noun bus, u3_chit jit)
+{
+  u3a_road* rod_u;
+  u3_noun   fol;
+
+  if (jit <= u3n_Jit.top) {
+    return u3n_Jit.hot[jit](bus);
+  }
+
+  for ( rod_u = u3R; rod_u; rod_u = u3tn(u3_road, rod_u->par_p) ) {
+    fol = u3h_get(rod_u->jis.tif, jit);
+    if (fol != u3_none) {
+      return _n_nock_on(bus, fol);
+    }
+  }
+
+  u3m_bail(c3__exit);
+}
+
+static void
+_n_fit_kep(u3_noun kev)
+{
+  u3_noun key = u3a_take(u3h(kev));
+  u3_noun val = u3a_take(u3t(kev));
+
+  u3h_put(u3R->jis.fit, key, val);
+}
+
+static void
+_n_tif_kep(u3_noun kev)
+{
+  u3_noun key = u3a_take(u3h(kev));
+  u3_noun val = u3a_take(u3t(kev));
+
+  u3h_put(u3R->jis.tif, key, val);
+}
+
+static void
+_n_tif_ins(u3_noun kev)
+{
+  u3_noun key = u3a_take(u3h(kev));
+  u3_noun val = u3a_take(u3t(kev));
+
+  u3n_Jit.hot[key] = _n_compile(val);
+  u3z(val);
 }
 
 void
-u3n_note(u3p(u3h_root) har_p)
+u3n_heat(u3p(u3h_root) fit, u3p(u3h_root) tif, u3_chit nex)
 {
-  u3h_walk(har_p, _n_note_kev);
-}
+  u3R->jis.nex = nex;
 
-/* Compile fol to native code and execute it against bus, caching
- * intelligently.  The compiler is not run on inner roads, so if the
- * compiled code is not available in the cache, note is taken so
- * that the outer road may compile some or all of them, and u3_none
- * is returned.
- *
- * RETAIN in the u3_none case, transfer otherwise.
- */
-u3_noun
-_n_nock_jit(u3_noun bus, u3_noun fol)
-{
-  c3_w inx_w;
+  u3h_walk(fit, _n_fit_kep);
 
-  if ( u3_none == (inx_w = u3h_get(u3n_Jit.har_p, fol)) ) {
-    if ( u3R == &(u3H->rod_u) ) {
-      return u3n_Jit.hot[_n_compile(fol)](bus);
-    }
-    else {
-      u3p(u3h_root) har_p = u3R->jic.har_p;
-      c3_w          got_w = u3h_get(har_p, fol);
-
-      if (got_w == u3_none) {
-        got_w = 0;
-      }
-      u3h_put(har_p, fol, got_w + 1);
-      return u3_none;
-    }
+  if ( u3R == &(u3H->rod_u) ) {
+    _n_grow_hot(nex - 1);
+    u3h_walk(tif, _n_tif_ins);
   }
   else {
-    u3z(fol);
-    return u3n_Jit.hot[inx_w](bus);
+    u3h_walk(tif, _n_tif_kep);
   }
-}
-
-u3_noun u3n_nock_jit(u3_noun bus, u3_noun fol)
-{
-  return _n_nock_jit(bus, fol);
-}
-
-jit_value_t u3nj_at(jit_function_t f, u3_noun axe, jit_value_t bus)
-{
-  return _nj_at(f, axe, bus);
 }

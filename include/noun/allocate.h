@@ -105,6 +105,11 @@
         u3p(struct _u3a_fbox) nex_p;
       } u3a_fbox;
 
+
+    /* u3_chit: jit token
+    */
+      typedef c3_w u3_chit;
+
     /* u3a_road: contiguous allocation and execution context.
     */
       typedef struct _u3a_road {
@@ -164,9 +169,12 @@
           u3p(u3h_root) har_p;                //  (map (pair term noun) noun)
         } cax;
 
-        struct {                              //  jit
-          u3p(u3h_root) har_p;                //  (map batt noun)
-        } jic;
+        struct {                              //  jit notes
+          u3p(u3h_root) fit;
+          u3p(u3h_root) tif;
+          u3_chit       nex;
+        } jis;
+
       } u3a_road;
       typedef u3a_road u3_road;
 

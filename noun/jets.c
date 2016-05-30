@@ -442,11 +442,11 @@ _cj_hook_in(u3_noun     cor,
     if ( u3_none == cax ) { return u3m_bail(c3__fail); }
     {
       u3_noun p_cax, q_cax, r_cax;
-      u3_noun jax, soh, mop, huc, hap, jit;
+      u3_noun jax, soh, mop, huc, hap, bal, jit;
       u3_noun p_mop, q_mop, r_mop;
 
       u3x_trel(cax, &p_cax, &q_cax, &r_cax);
-      u3x_trel(p_cax, &jax, &hap, &jit);
+      u3x_qual(p_cax, &jax, &hap, &bal, &jit);
       u3x_cell(q_cax, &soh, &mop);
       u3x_trel(mop, &p_mop, &q_mop, &r_mop);
 
@@ -487,8 +487,15 @@ _cj_hook_in(u3_noun     cor,
               //  Tricky: the above case would work here too, but would
               //  disable jet_o and create some infinite recursions.
               //
+              u3_noun pro;
+              if ( jit != u3_nul ) {
+                pro = u3n_nock_chit(cor, u3kdb_get(u3k(jit), u3k(axe_l)));
+              }
+              else {
+                pro = u3n_nock_on(cor, u3k(u3x_at(axe_l, cor)));
+              }
               u3z(cax); u3z(fol);
-              return u3n_nock_on(cor, u3k(u3x_at(axe_l, cor)));
+              return pro;
             }
           }
           else {
@@ -598,6 +605,19 @@ u3j_kick(u3_noun cor, u3_noun axe)
       u3_noun inx = u3kdb_get(u3k(hap), u3k(axe));
 
       if ( u3_none == inx ) {
+        u3p(u3h_root) jit = u3t(u3t(u3t(u3h(cax))));
+
+        if ( jit != u3_nul ) {
+          u3_noun cit = u3kdb_get(u3k(jit), u3k(axe));
+          u3_noun pro = u3n_nock_chit(cor,
+            (cit == u3_none)
+            ? u3n_compile(u3x_at(axe, cor))
+            : cit);
+
+          u3z(cax);
+          return pro;
+        }
+
         u3z(cax);
         u3t_off(glu_o); 
         {
@@ -677,12 +697,51 @@ u3j_kink(u3_noun cor,
   }
 }
 
+static u3_noun
+_cj_jit_arms(u3_noun bat, u3_noun huk, u3_noun acc)
+{
+  c3_l    cor_l, bug_l, bat_l;
+  c3_w    dep_w;
+  u3_noun n_huk, l_huk, r_huk, fol, arm;
+
+  if ( u3_nul == huk ) {
+    return acc;
+  }
+  else {
+    u3x_trel(huk, &n_huk, &l_huk, &r_huk);
+    {
+      fol   = u3t(n_huk);
+      cor_l = _cj_axis(fol);
+
+      acc = _cj_jit_arms(bat, l_huk, acc);
+
+      if ( 0 != cor_l ) {
+        // have axe within core, need axe within bat
+        dep_w = u3x_dep(cor_l);
+        bug_l = 1 << (dep_w - 1);
+        bat_l = bug_l | (cor_l & (bug_l - 1));
+        arm   = u3x_at(bat_l, bat);
+        acc   = u3kdb_put(u3k(acc), u3k(cor_l), u3k(u3n_compile(arm)));
+      }
+
+      acc = _cj_jit_arms(bat, r_huk, acc);
+
+      return acc;
+    }
+  }
+}
+
 /* _cj_jit(): generate arbitrary warm jet-associated data.  RETAIN.
 */
 static u3_noun 
-_cj_jit(c3_l jax_l, u3_noun bat)
+_cj_jit(c3_l jax_l, u3_noun bat, u3_noun huk)
 {
-  return u3_nul;
+  if (jax_l != 0) {
+    return u3_nul;
+  }
+  else {
+    return _cj_jit_arms(bat, huk, u3_nul);
+  }
 }
 
 /* _cj_mine(): declare a core.  RETAIN.
@@ -778,7 +837,7 @@ _cj_mine(u3_noun cey, u3_noun cor)
               u3nt(u3nq(jax_l, 
                         _cj_warm_hump(jax_l, r_cey),
                         bal,
-                        _cj_jit(jax_l, bat)),
+                        _cj_jit(jax_l, bat, r_cey)),
                    u3nc(soh, mop),
                    cuz));
     } 
@@ -963,7 +1022,7 @@ _cj_warm_ream_be(c3_l    jax_l,
             u3nt(u3nq(jax_l, 
                       _cj_warm_hump(jax_l, u3t(cuz)), 
                       u3k(lab),
-                      _cj_jit(jax_l, bat)),
+                      _cj_jit(jax_l, bat, u3t(cuz))),
                  u3nc(u3k(soh), u3k(mop)),
                  u3k(cuz)));
 }
