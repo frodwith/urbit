@@ -489,7 +489,7 @@ _cj_hook_in(u3_noun     cor,
               //
               u3_noun pro;
               if ( jit != u3_nul ) {
-                pro = u3n_nock_chit(cor, u3kdb_get(u3k(jit), u3k(axe_l)));
+                pro = u3n_nock_chit(cor, u3kdb_get(u3k(u3t(jit)), u3k(axe_l)));
               }
               else {
                 pro = u3n_nock_on(cor, u3k(u3x_at(axe_l, cor)));
@@ -608,12 +608,11 @@ u3j_kick(u3_noun cor, u3_noun axe)
         u3p(u3h_root) jit = u3t(u3t(u3t(u3h(cax))));
 
         if ( jit != u3_nul ) {
-          u3_noun cit = u3kdb_get(u3k(jit), u3k(axe));
+          u3_noun cit = u3kdb_get(u3k(u3t(jit)), u3k(axe));
           u3_noun pro = u3n_nock_chit(cor,
             (cit == u3_none)
             ? u3n_compile(u3x_at(axe, cor))
             : cit);
-
           u3z(cax);
           return pro;
         }
@@ -740,7 +739,7 @@ _cj_jit(c3_l jax_l, u3_noun bat, u3_noun huk)
     return u3_nul;
   }
   else {
-    return _cj_jit_arms(bat, huk, u3_nul);
+    return u3nc(c3y, _cj_jit_arms(bat, huk, u3_nul));
   }
 }
 
