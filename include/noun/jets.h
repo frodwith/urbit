@@ -28,6 +28,16 @@
   ***
   *** All of these are transient structures allocated with malloc.
   **/
+    /* u3j_vec: resizable vector
+    */
+      typedef struct {
+        c3_l   pre_l;
+        c3_l   all_l;
+        c3_l   len_l;
+        void*  data;
+        size_t size;
+      } u3j_vec;
+
     /* u3j_harm: jet arm.
     */
       typedef struct _u3j_harm {
@@ -45,9 +55,10 @@
     */
       typedef struct _u3j_core {
         c3_c*             cos_c;        //  control string
-        struct _u3j_harm* arm_u;        //  blank-terminated static list
-        struct _u3j_core* dev_u;        //  blank-terminated static list
+        struct _u3j_harm* arm_u;        //  blank-terminated static arm list
+        struct _u3j_core* dev_u;        //  blank-terminated static child list
         struct _u3j_core* par_u;        //  dynamic parent pointer 
+        u3j_vec           dyc_u;        //  dynamic child vector[u3j_core*]
         c3_l              axe_l;        //  axis to parent
         c3_l              jax_l;        //  index in global dashboard
       } u3j_core;
@@ -55,10 +66,9 @@
     /* u3e_dash, u3_Dash, u3D: jet dashboard singleton
     */
       typedef struct _u3e_dash {
-        u3j_core* dev_u;              //  null-terminated static list
-        c3_l      len_l;              //  dynamic array length
-        c3_l      all_l;              //  allocated length
-        u3j_core* ray_u;              //  dynamic array by axis
+        u3j_core* dev_u;              //  blank-terminated static child list
+        u3j_vec   dyc_u;              //  dynamic child vector[u3j_core*]
+        u3j_vec   ray_u;              //  dynamic core vector[u3j_core]
       } u3j_dash;
 
   /** Globals.

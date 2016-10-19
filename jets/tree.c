@@ -638,6 +638,6 @@ static u3j_core _d[] = {
 u3j_dash 
 u3j_Dash = {
   _d,
-  0,
-  0
+  {},
+  {},
 };

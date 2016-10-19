@@ -3,42 +3,96 @@
 */
 #include "all.h"
 
-  /* _cj_count(): count and link dashboard entries.
+/* pointers invalid across calls to _cj_vec_grow */
+#define _cj_vec_ptr(t, v, i) ((t*)&(((t*)(v)->data)[(i)]))
+
+  /*  _cj_vec_init(): initialize a u3j_vector
   */
-  static c3_w 
-  _cj_count(u3j_core* par_u, u3j_core* dev_u)
+  static void
+  _cj_vec_init(u3j_vec* vec_u, size_t size) {
+    vec_u->pre_l = 1;
+    vec_u->all_l = 1;
+    vec_u->len_l = 0;
+    vec_u->data  = 0;
+    vec_u->size  = size;
+  }
+
+  /*  _cj_vec_grow(): grow vec_u to (at least) n_l elements
+  */
+  static void
+  _cj_vec_grow(u3j_vec* vec_u, c3_l n_l)
   {
-    c3_w len_l = 0;
-    c3_w i_w;
-
-    if ( dev_u ) {
-      for ( i_w = 0; 0 != dev_u[i_w].cos_c; i_w++ ) {
-        u3j_core* kid_u = &dev_u[i_w];
-
-        kid_u->par_u = par_u;
-        len_l += _cj_count(kid_u, kid_u->dev_u);
+    c3_l a_l, b_l, c_l;
+    if ( (b_l = vec_u->all_l) <= n_l ) {
+      size_t siz;
+      a_l = vec_u->pre_l;
+      while ( b_l <= n_l ) {
+        c_l = a_l + b_l;
+        a_l = b_l;
+        b_l = c_l;
       }
+      vec_u->pre_l = a_l;
+      vec_u->all_l = b_l;
+      siz = b_l*vec_u->size;
+      vec_u->data = ( 0 == vec_u->data )
+        ? malloc(siz)
+        : realloc(vec_u->data, siz);
     }
-    return 1 + len_l;
+  }
+
+  /* _cj_vec_slot(): increment vector length and return index
+  */
+  static c3_l
+  _cj_vec_slot(u3j_vec *vec_u)
+  {
+    c3_l r_l = (vec_u->len_l)++;
+    _cj_vec_grow(vec_u, r_l+1);
+    return r_l;
+  }
+  /* _cj_adopt(): add a u3j_core* to its parent */
+  static void
+  _cj_adopt(u3j_core* cop_u, c3_l par_l)
+  {
+    u3j_vec*   dyc_u;
+    u3j_core*  par_u;
+    c3_l       inx_l, *jap_l;
+
+    if ( 0 == par_l ) {
+      par_u = 0;
+      dyc_u = &u3D.dyc_u;
+    }
+    else {
+      par_u = _cj_vec_ptr(u3j_core, &u3D.ray_u, par_l);
+      dyc_u = &par_u->dyc_u;
+    }
+
+    cop_u->par_u = par_u;
+    inx_l  = _cj_vec_slot(dyc_u);
+    jap_l  = _cj_vec_ptr(c3_l, dyc_u, inx_l);
+    *jap_l = cop_u->jax_l;
   }
   /* _cj_install(): install dashboard entries.
   */
-  static c3_w
-  _cj_install(u3j_core* ray_u, c3_w jax_l, u3j_core* dev_u)
+  static void
+  _cj_install(u3j_core* dev_u, c3_l par_l)
   {
-    c3_w i_w;
+    c3_l i_l, jax_l, len_l = 0;
+    u3j_core* cop_u;
 
     if ( dev_u ) {
-      for ( i_w = 0; 0 != dev_u[i_w].cos_c; i_w++ ) {
-        u3j_core* kid_u = &dev_u[i_w];
-
-        kid_u->jax_l = jax_l;
-        ray_u[jax_l++] = *kid_u;
-
-        jax_l = _cj_install(ray_u, jax_l, kid_u->dev_u);
-      }
+      while ( 0 != dev_u[len_l].cos_c ) len_l++;
     }
-    return jax_l;
+
+    for ( i_l = 0; i_l < len_l; ++i_l ) {
+      jax_l  = _cj_vec_slot(&u3D.ray_u);
+      cop_u  = _cj_vec_ptr(u3j_core, &u3D.ray_u, jax_l);
+      *cop_u = dev_u[i_l];
+
+      cop_u->jax_l = jax_l;
+      _cj_vec_init(&cop_u->dyc_u, sizeof(u3j_core*));
+      _cj_adopt(cop_u, par_l);
+      _cj_install(cop_u->dev_u, jax_l);
+    }
   }
 
 /* _cj_axis(): axis from formula, or 0.  `fol` is RETAINED.
@@ -226,7 +280,8 @@ _cj_warm_hump(c3_l jax_l, u3_noun huc)
 
   /* Compute axes of all correctly declared arms.
   */
-  if ( jax_l && (cop_u = &u3D.ray_u[jax_l])->arm_u ) {
+  if ( jax_l && (cop_u = _cj_vec_ptr(u3j_core, &u3D.ray_u, jax_l))->arm_u )
+  {
     u3j_harm* jet_u;
     c3_l        i_l;
 
@@ -272,22 +327,24 @@ static c3_l
 _cj_hot_mean(c3_l par_l, u3_noun mop, u3_noun bat)
 {
   u3j_core* par_u;
-  u3j_core* dev_u;
+  u3j_vec*  dyc_u;
 
-  if ( 0 != par_l ) {
-    par_u = &u3D.ray_u[par_l];
-    dev_u = par_u->dev_u;
-  }
-    else {
+  if ( 0 == par_l ) {
     par_u = 0;
-    dev_u = u3D.dev_u;
+    dyc_u = &u3D.dyc_u;
+  }
+  else {
+    par_u = _cj_vec_ptr(u3j_core, &u3D.ray_u, par_l);
+    dyc_u = &par_u->dyc_u;
   }
 
   {
-    c3_w i_l = 0;
+    c3_l i_l, jax_l, len_l = dyc_u->len_l;
     u3j_core* cop_u;
 
-    while ( (cop_u = &dev_u[i_l])->cos_c ) {
+    for ( i_l = 0; i_l < len_l; ++i_l ) {
+      jax_l = *(_cj_vec_ptr(c3_l, dyc_u, i_l));
+      cop_u = _cj_vec_ptr(u3j_core, &u3D.ray_u, jax_l);
       if ( _(u3r_sing_c(cop_u->cos_c, u3h(mop))) ) {
 #if 0
         fprintf(stderr, "hot: bound jet %d/%s/%s/%x\r\n", 
@@ -298,7 +355,6 @@ _cj_hot_mean(c3_l par_l, u3_noun mop, u3_noun bat)
 #endif
         return cop_u->jax_l;
       }
-      i_l++;
     }
   }
   return 0;
@@ -335,16 +391,11 @@ _cj_hot_mine(u3_noun mop, u3_noun cor)
 void
 u3j_boot(void)
 {
-  c3_w jax_l;
-
-  u3D.len_l =_cj_count(0, u3D.dev_u);
-  u3D.all_l = (2 * u3D.len_l) + 1024;     //  horrid heuristic
-
-  u3D.ray_u = (u3j_core*) malloc(u3D.all_l * sizeof(u3j_core));
-  memset(u3D.ray_u, 0, (u3D.all_l * sizeof(u3j_core)));
-
-  jax_l = _cj_install(u3D.ray_u, 1, u3D.dev_u);
-  fprintf(stderr, "boot: installed %d jets\n", jax_l);
+  _cj_vec_init(&u3D.ray_u, sizeof(u3j_core));
+  _cj_vec_init(&u3D.dyc_u, sizeof(u3j_core*));
+  u3D.ray_u.len_l = 1; // start index at 1 because 0 is no jax
+  _cj_install(u3D.dev_u, 0);
+  fprintf(stderr, "boot: installed %d jets\n", u3D.ray_u.len_l - 1);
 }
 
 /* _cj_soft(): kick softly by arm axis.
@@ -453,7 +504,7 @@ _cj_hook_in(u3_noun     cor,
       huc = u3t(r_cax);
       {
         c3_l      jax_l = jax;
-        u3j_core* cop_u = &u3D.ray_u[jax_l];
+        u3j_core* cop_u = _cj_vec_ptr(u3j_core, &u3D.ray_u, jax_l);
         u3_noun   fol   = u3kdb_get(u3k(huc), u3i_string(tam_c));
 
         if ( u3_none == fol ) {
@@ -629,7 +680,7 @@ u3j_kick(u3_noun cor, u3_noun axe)
 #endif
       else {
         c3_l      jax_l = u3h(u3h(cax));
-        u3j_core* cop_u = &u3D.ray_u[jax_l];
+        u3j_core* cop_u = _cj_vec_ptr(u3j_core, &u3D.ray_u, jax_l);
         c3_l      inx_l = inx;
         u3j_harm* ham_u = &cop_u->arm_u[inx_l];
         c3_o      pof_o = __(u3C.wag_w & u3o_debug_cpu);
@@ -683,6 +734,85 @@ static u3_noun
 _cj_jit(c3_l jax_l, u3_noun bat)
 {
   return u3_nul;
+}
+
+/* _cj_fast(): speed up a calx if appropriate.
+ *             `bat` is RETAINED. `cax` is TRANSFERRED.
+*/
+static u3_noun
+_cj_fast(u3_noun bat, u3_noun cax)
+{
+  u3_noun   mop, cuz, cup, hap, caf, fac, par, pro;
+  u3j_core* cop_u;
+  c3_l      jax_l, par_l;
+  u3j_harm* ham_u;
+
+  if ( u3R != &(u3H->rod_u) ) {
+    // we'll get called again by reap on the outer road
+    return cax;
+  }
+
+  caf = u3h(cax);             // ++calf
+  if ( 0 != u3h(caf) ) {
+    // jet already registered
+    return cax;
+  }
+
+  cuz = u3t(u3t(cax));        // ++club
+  mop = u3t(u3h(u3t(cax)));   // ++cope
+  cup = u3h(cuz);             // ++corp
+  par = u3t(u3t(mop));        // (each bash noun)
+  //nec = _cj_tome(bat, mop, cup);
+
+  jax_l        = _cj_vec_slot(&u3D.ray_u);
+  cop_u        = _cj_vec_ptr(u3j_core, &u3D.ray_u, jax_l);
+  cop_u->cos_c = u3r_string(u3h(mop));
+  cop_u->jax_l = jax_l;
+  cop_u->axe_l = u3h(u3t(mop));
+  if ( u3_nul != u3t(cuz) ) {
+    cop_u->arm_u = (u3j_harm*) { 0 };
+  }
+  else {
+    /* we're only going to bother compiling arms for funks, which are
+     * defined as fast hints with a ~ huc. this is because non-funk
+     * arms normally produce funk cores, which are fast-hinted
+     * seperately.
+    */
+    cop_u->arm_u = ham_u = calloc(2, sizeof(u3j_harm));
+    _cj_vec_init(&cop_u->dyc_u, sizeof(u3j_core*));
+    ham_u->fcs_c = ".2";
+    ham_u->fun_f = u3jit_compile(bat);
+    ham_u->cop_u = cop_u;
+    ham_u->ice   = c3y;
+    ham_u->tot   = c3n;
+    ham_u->liv   = c3n;
+  }
+
+  if ( c3n == u3h(par) ) {
+    par_l = 0;
+  }
+  else {
+    u3_noun pab = ( c3y == u3h(cup) )
+                ? u3t(u3t(cup))
+                : u3t(cup);
+    u3_noun xac = u3j_find(pab);
+    c3_assert( u3_none != xac );
+    par_l = u3h(u3h(xac));
+    if ( 0 == par_l ) {
+      fprintf(stderr, "parent not in hot dashboard\n");
+      u3m_p("orphan jet", u3h(u3t(u3t(caf))));
+      u3m_bail(c3__fail);
+    }
+    u3z(xac);
+  }
+
+  _cj_adopt(cop_u, par_l);
+  hap = u3qdb_put(u3_nul, 2, 0);
+  fac = u3nt(jax_l, hap, u3k(u3t(u3t(caf))));
+  pro = u3nc(fac, u3k(u3t(cax)));
+  u3z(cax);
+
+  return pro;
 }
 
 /* _cj_mine(): declare a core.  RETAIN.
@@ -773,14 +903,15 @@ _cj_mine(u3_noun cey, u3_noun cor)
       fprintf(stderr, "  bat %x, jax %d\r\n", u3r_mug(bat), jax_l);
 #endif
 
-      u3h_put(u3R->jed.har_p, 
-              bat, 
-              u3nt(u3nq(jax_l, 
-                        _cj_warm_hump(jax_l, r_cey),
-                        bal,
-                        _cj_jit(jax_l, bat)),
-                   u3nc(soh, mop),
-                   cuz));
+      u3h_put(u3R->jed.har_p,
+              bat,
+              _cj_fast(bat,
+                u3nt(u3nq(jax_l,
+                          _cj_warm_hump(jax_l, r_cey),
+                          bal,
+                          _cj_jit(jax_l, bat)),
+                     u3nc(soh, mop),
+                     cuz)));
     } 
   }
 }
@@ -903,10 +1034,8 @@ _cj_cold_reap_in(u3_noun taw)
   }
 }
 
-/* _cj_warm_reap(): reap key and value from warm table.
-*/
-static void
-_cj_warm_reap(u3_noun kev)
+static u3_weak
+_cj_warm_grab_kev(u3_noun kev)
 {
   u3_noun bat = u3h(kev);
   u3_noun cax = u3t(kev);
@@ -925,10 +1054,36 @@ _cj_warm_reap(u3_noun kev)
       u3m_p("hot jet", u3h(u3t(u3t(u3h(cax)))));
       fprintf(stderr, "  bat %x\r\n", u3r_mug(tab));
 #endif
-      u3h_put(u3R->jed.har_p, tab, xac);
-      u3z(tab);
+      return u3nc(tab, xac);
     }
   }
+  return u3_none;
+}
+
+/* _cj_warm_reap(): reap key and value from warm table.
+*/
+static void
+_cj_warm_reap(u3_noun kev)
+{
+  u3_noun got = _cj_warm_grab_kev(kev);
+  if ( u3_none != got ) {
+    u3_noun tab = u3k(u3h(got));
+    u3_noun xac = u3k(u3t(got));
+    u3h_put(u3R->jed.har_p, tab, xac);
+    u3z(tab); u3z(got);
+  }
+}
+
+static struct {
+  u3_noun* ary;
+  c3_l     i_l;
+} _rost;
+static void _cj_rost_1(u3_noun kev) { _rost.i_l += 1; }
+static void _cj_rost_2(u3_noun kev) { _rost.ary[_rost.i_l++] = kev; }
+static int _cj_rost_cmp(const void* keva, const void* kevb) {
+  u3_noun laa = u3h(u3t(u3t(u3h(u3t(*((u3_noun*)keva))))));
+  u3_noun lab = u3h(u3t(u3t(u3h(u3t(*((u3_noun*)kevb))))));
+  return u3qb_lent(laa) - u3qb_lent(lab);
 }
 
 /* u3j_reap(): promote jet state.  RETAINS.
@@ -937,7 +1092,35 @@ void
 u3j_reap(u3_noun das, u3p(u3h_root) har_p)
 {
   _cj_cold_reap_in(das);
-  u3h_walk(har_p, _cj_warm_reap);
+  if ( u3R != &(u3H->rod_u) ) {
+    u3h_walk(har_p, _cj_warm_reap);
+  }
+  else {
+    // sort by length of label (parents before children)
+    c3_l i_l;
+    size_t nmemb;
+    u3_noun got, xac, tab;
+
+    _rost.i_l = 0;
+    u3h_walk(har_p, _cj_rost_1);
+    nmemb = _rost.i_l;
+
+    _rost.i_l = 0;
+    _rost.ary = alloca(sizeof(u3_noun)*nmemb);
+
+    u3h_walk(har_p, _cj_rost_2);
+    qsort(_rost.ary, nmemb, sizeof(u3_noun), _cj_rost_cmp);
+
+    for ( i_l = 0; i_l < nmemb; i_l++) {
+      got = _cj_warm_grab_kev(_rost.ary[i_l]);
+      if ( u3_none != got ) {
+        tab = u3k(u3h(got));
+        xac = u3k(u3t(got));
+        u3h_put(u3R->jed.har_p, tab, _cj_fast(tab, xac));
+        u3z(tab);
+      }
+    }
+  }
 }
 
 static c3_l _cj_warm_ream_at(u3_noun soh, u3_noun* lab, u3_noun cag);
@@ -959,13 +1142,14 @@ _cj_warm_ream_be(c3_l    jax_l,
 #endif
 
   u3h_put(u3R->jed.har_p,
-            bat,
-            u3nt(u3nq(jax_l, 
-                      _cj_warm_hump(jax_l, u3t(cuz)), 
+          bat,
+          _cj_fast(bat,
+            u3nt(u3nq(jax_l,
+                      _cj_warm_hump(jax_l, u3t(cuz)),
                       u3k(lab),
                       _cj_jit(jax_l, bat)),
                  u3nc(u3k(soh), u3k(mop)),
-                 u3k(cuz)));
+                 u3k(cuz))));
 }
 
 /* _cj_warm_ream_is(): reream battery; RETAINS.

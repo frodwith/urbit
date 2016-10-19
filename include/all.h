@@ -18,6 +18,7 @@
 #   include "noun/events.h"    //  u3e: persistence
 #   include "noun/hashtable.h" //  u3h: hashtables
 #   include "noun/imprison.h"  //  u3i: noun construction
+#   include "noun/jit.h"       //  u3jit: just-in-time compilation
 #   include "noun/jets.h"      //  u3j: jet control
 #   include "noun/manage.h"    //  u3m: master state
 #   include "noun/nock.h"      //  u3n: nock execution
