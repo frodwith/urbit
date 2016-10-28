@@ -171,10 +171,10 @@ _n_mush_in(u3_noun val)
   }
 }
 
-/* _n_mush(): tank from failed path request.
+/* u3n_mush(): tank from failed path request.
 */
-static u3_noun 
-_n_mush(u3_noun val)
+u3_noun
+u3n_mush(u3_noun val)
 {
   u3_noun pro;
 
@@ -406,7 +406,7 @@ _n_nock_on(u3_noun bus, u3_noun fol)
           //
           //  replace with proper error stack push
           //
-          u3t_push(u3nc(c3__hunk, _n_mush(gof)));
+          u3t_push(u3nc(c3__hunk, u3n_mush(gof)));
           return u3m_bail(c3__exit);
         }
         else {

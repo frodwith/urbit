@@ -53,3 +53,8 @@
     */
       u3_noun
       u3n_nock_an(u3_noun bus, u3_noun fol);
+
+    /* u3n_mush: tank from failed path request
+    */
+      u3_noun
+      u3n_mush(u3_noun val);
