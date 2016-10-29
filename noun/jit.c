@@ -53,6 +53,12 @@ _gain(jit_function_t f, jit_value_t a)
   return _nat(f, "u3k", u3a_gain, c3y, 1, a);
 }
 
+static void
+_lose(jit_function_t f, jit_value_t a)
+{
+  _nat(f, "u3z", u3a_lose, c3n, 1, a);
+}
+
 static jit_value_t
 _quot(jit_function_t f, u3_noun a)
 {
@@ -107,20 +113,34 @@ _bail(jit_function_t f, jit_value_t wit)
 }
 
 static jit_value_t
+_eqw(jit_function_t f, jit_value_t one, c3_w two)
+{
+  return jit_insn_eq(f, one, _w(f, two));
+}
+
+static jit_value_t
+_cell(jit_function_t f, jit_value_t a, jit_value_t b)
+{
+  return _nat(f, "[]", u3i_cell, c3y, 2, a, b);
+}
+
+static jit_value_t
 _frag(jit_function_t f, u3_noun axe, jit_value_t bus)
 {
   jit_label_t bal, fin;
+  jit_value_t cur;
   u3_noun     exa;
 
   bal = fin = jit_label_undefined;
+  cur = jit_insn_load(f, bus);
 
   while ( axe > 1 ) {
-    jit_insn_branch_if_not(f, _is_cell(f, bus), &bal);
+    jit_insn_branch_if_not(f, _eqw(f, _is_cell(f, bus), c3y), &bal);
     if ( 2 == u3qc_cap(axe) ) {
-      jit_insn_store(f, bus, _h(f, bus));
+      jit_insn_store(f, cur, _h(f, cur));
     }
     else {
-      jit_insn_store(f, bus, _t(f, bus));
+      jit_insn_store(f, cur, _t(f, cur));
     }
     exa = u3qc_mas(axe);
     u3z(axe);
@@ -132,7 +152,7 @@ _frag(jit_function_t f, u3_noun axe, jit_value_t bus)
   _bail(f, _w(f, c3__exit));
   jit_insn_label(f, &fin);
 
-  return bus;
+  return cur;
 }
 
 static jit_value_t
@@ -143,7 +163,7 @@ _nock_6(jit_function_t f, jit_value_t bus, u3_noun tys, u3_noun yes, u3_noun no)
 
   fin = alt = jit_label_undefined;
   pro = jit_value_create(f, jit_type_uint);
-  jit_insn_branch_if_not(f, _nock(f, _gain(f, bus), tys), &alt);
+  jit_insn_branch_if(f, _eqw(f, _nock(f, _gain(f, bus), tys), c3n), &alt);
 
   jit_insn_store(f, pro, _nock(f, bus, yes));
   jit_insn_branch(f, &fin);
@@ -156,23 +176,11 @@ _nock_6(jit_function_t f, jit_value_t bus, u3_noun tys, u3_noun yes, u3_noun no)
 }
 
 static jit_value_t
-_eqw(jit_function_t f, jit_value_t one, c3_w two)
-{
-  return jit_insn_eq(f, one, _w(f, two));
-}
-
-static void
-_lose(jit_function_t f, jit_value_t a)
-{
-  _nat(f, "u3z", u3a_lose, c3n, 1, a);
-}
-
-static jit_value_t
 _nock_9(jit_function_t f, jit_value_t bus, u3_noun axe, u3_noun cof)
 {
   jit_label_t fin = jit_label_undefined;
   jit_value_t cor = _nock(f, bus, cof);
-  jit_value_t jax = _quot(f, axe);
+  jit_value_t jax = _quot(f, u3k(axe));
   jit_value_t pro = _nat(f, "u3j_kick", u3j_kick, c3y, 2, cor, jax);
   jit_value_t ruf;
 
@@ -183,12 +191,6 @@ _nock_9(jit_function_t f, jit_value_t bus, u3_noun axe, u3_noun cof)
 
   jit_insn_label(f, &fin);
   return pro;
-}
-
-static jit_value_t
-_cell(jit_function_t f, jit_value_t a, jit_value_t b)
-{
-  return _nat(f, "[]", u3i_cell, c3y, 2, a, b);
 }
 
 static jit_value_t
@@ -411,7 +413,7 @@ _nock(jit_function_t f, jit_value_t bus, u3_noun fol)
   }
 }
 
-/* u3jit_compile(): compile a nock formula (trivial)
+/* u3jit_compile(): compile a nock formula
 */
 u3_funk
 u3jit_compile(u3_noun fol) {
@@ -422,14 +424,13 @@ u3jit_compile(u3_noun fol) {
   jit_context_build_start(cex);
   f   = jit_function_create(cex, _sig(c3y, 1));
   bus = _gain(f, jit_value_get_param(f, 0));
-#if 0
-  {
+  if ( 0 ) {
     jit_value_t ruf = _quot(f, u3k(fol));
     jit_insn_return(f, _nat(f, "*", u3n_nock_on, c3y, 2, bus, ruf));
   }
-#else
-  jit_insn_return(f, _nock(f, bus, fol));
-#endif
+  else {
+    jit_insn_return(f, _nock(f, bus, fol));
+  }
   jit_context_build_end(cex);
   jit_function_compile(f);
   return jit_function_to_closure(f);

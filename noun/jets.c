@@ -785,7 +785,7 @@ _cj_fast(u3_noun bat, u3_noun cax)
     ham_u->cop_u = cop_u;
     ham_u->ice   = c3y;
     ham_u->tot   = c3n;
-    ham_u->liv   = c3n;
+    ham_u->liv   = c3y;
   }
 
   if ( c3n == u3h(par) ) {

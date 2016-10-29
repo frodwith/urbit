@@ -8,7 +8,7 @@
         */
           void
           u3jit_boot(void);
-        /* u3jit_compile(): compile a nock formula (trivial)
+        /* u3jit_compile(): compile a nock formula
         */
           u3_funk
           u3jit_compile(u3_noun);
