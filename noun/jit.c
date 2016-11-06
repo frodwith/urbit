@@ -613,6 +613,31 @@ u3jit_to_cond(u3_noun cor)
 }
 
 u3_noun
+u3jit_to_comp(u3_noun cor)
+{
+  u3_noun nec, sun, fol;
+  if ( c3n == u3r_mean(cor,
+        u3x_sam_2,   &sun,
+        u3x_sam_3,   &fol,
+        u3x_con_sam, &nec, 0) )
+  {
+    return u3m_bail(c3__exit);
+  }
+  else {
+    u3_noun roc, pro;
+    roc = u3i_molt(u3k(cor), u3x_sam, u3k(sun), 0);
+    nec = u3jit_to_nock(roc);
+    roc = u3i_molt(roc,
+      u3x_sam,     u3k(fol),
+      u3x_con_sam, nec,
+      0);
+    pro = u3jit_to_nock(roc);
+    u3z(roc);
+    return pro;
+  }
+}
+
+u3_noun
 u3jit_to_cons(u3_noun cor)
 {
   u3_noun nec, t;
@@ -765,7 +790,7 @@ u3jit_to_nock(u3_noun cor)
       pro = u3jit_to_cond(u3i_molt(u3k(cor), u3x_sam, u3k(gal), 0));
       break;
     case 7:
-      pro = u3n_slam_on(u3j_hook(u3k(cor), "comp"), u3k(gal));
+      pro = u3jit_to_comp(u3i_molt(u3k(cor), u3x_sam, u3k(gal), 0));
       break;
     case 8:
       pro = u3n_slam_on(u3j_hook(u3k(cor), "push"), u3k(gal));
