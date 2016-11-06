@@ -462,6 +462,33 @@ _to_bind(u3_noun nec, u3_noun t)
 }
 
 static u3_noun
+_to_cons(u3_noun nec, u3_noun t)
+{
+  if ( u3_nul == nec && u3_nul == t ) {
+    return u3_nul;
+  }
+  else {
+    u3_noun pag, hen, het;
+    if ( (u3_nul != nec)        &&
+         (u3_nul != t)          &&
+         (c3y == u3h(u3h(nec))) &&
+         (c3y == u3h(u3h(t))) )
+    {
+      pag = u3nt(c3y, u3k(u3t(u3h(nec))), u3k(u3t(u3h(t))));
+    }
+    else {
+      u3_noun p, q;
+      p = (u3_nul == nec) ? u3_nul : u3k(u3h(nec));
+      q = (u3_nul == t)   ? u3_nul : u3k(u3h(t));
+      pag = u3nt(c3n, p, q);
+    }
+    hen = (u3_nul == nec) ? u3_nul : u3t(nec);
+    het = (u3_nul == t)   ? u3_nul : u3t(t);
+    return u3nc(pag, u3qdi_uni(hen, het));
+  }
+}
+
+static u3_noun
 _to_frag(u3_noun nec, u3_noun a)
 {
   u3_noun pro;
@@ -518,21 +545,15 @@ u3jit_to_auto(u3_noun cor)
     return u3m_bail(c3__exit);
   }
   else {
-    u3_noun roc, tal, hed;
-#if 0
-    ++  auto  ~/  %auto
-              |=  {pol/^nock qol/^nock}  ^-  tome
-              =/  hed  (nock pol)
-              =.  nec  (~(bind to hed) nec)
-              (~(cons to hed) (nock qol))
-#endif
+    u3_noun roc, tal, hed, pro;
     roc = u3i_molt(u3k(cor), u3x_sam, u3k(pol), 0);
     hed = u3jit_to_nock(roc);
     nec = _to_bind(u3k(hed), u3k(nec));
     roc = u3i_molt(roc, u3x_sam, u3k(qol), u3x_con_sam, nec, 0);
     tal = u3jit_to_nock(roc);
-    roc = u3i_molt(roc, u3x_con_sam, hed, 0);
-    return u3n_slam_on(u3j_hook(roc, "cons"), tal);
+    pro = _to_cons(hed, tal);
+    u3z(roc);
+    return pro;
   }
 }
 
@@ -588,6 +609,18 @@ u3jit_to_cond(u3_noun cor)
       u3z(roc);
       return pro;
     }
+  }
+}
+
+u3_noun
+u3jit_to_cons(u3_noun cor)
+{
+  u3_noun nec, t;
+  if ( c3n == u3r_mean(cor, u3x_sam, &t, u3x_con_sam, &nec, 0) ) {
+    return u3m_bail(c3__exit);
+  }
+  else {
+    return _to_cons(u3k(nec), u3k(t));
   }
 }
 
