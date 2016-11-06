@@ -507,6 +507,36 @@ _to_frag(u3_noun nec, u3_noun a)
 u3_noun u3jit_to_nock(u3_noun);
 
 u3_noun
+u3jit_to_auto(u3_noun cor)
+{
+  u3_noun nec, pol, qol;
+  if ( c3n == u3r_mean(cor,
+        u3x_sam_2,   &pol,
+        u3x_sam_3,   &qol,
+        u3x_con_sam, &nec, 0) )
+  {
+    return u3m_bail(c3__exit);
+  }
+  else {
+    u3_noun roc, tal, hed;
+#if 0
+    ++  auto  ~/  %auto
+              |=  {pol/^nock qol/^nock}  ^-  tome
+              =/  hed  (nock pol)
+              =.  nec  (~(bind to hed) nec)
+              (~(cons to hed) (nock qol))
+#endif
+    roc = u3i_molt(u3k(cor), u3x_sam, u3k(pol), 0);
+    hed = u3jit_to_nock(roc);
+    nec = _to_bind(u3k(hed), u3k(nec));
+    roc = u3i_molt(roc, u3x_sam, u3k(qol), u3x_con_sam, nec, 0);
+    tal = u3jit_to_nock(roc);
+    roc = u3i_molt(roc, u3x_con_sam, hed, 0);
+    return u3n_slam_on(u3j_hook(roc, "cons"), tal);
+  }
+}
+
+u3_noun
 u3jit_to_bump(u3_noun cor)
 {
   u3_noun nec, fol;
@@ -675,7 +705,7 @@ u3jit_to_nock(u3_noun cor)
   gal = u3t(fol);
 
   if ( c3y == u3du(hib) ) {
-    pro = u3n_slam_on(u3j_hook(u3k(cor), "auto"), u3k(fol));
+    pro = u3jit_to_auto(u3i_molt(u3k(cor), u3x_sam, u3k(fol), 0));
   }
   else switch (hib) {
     default:
