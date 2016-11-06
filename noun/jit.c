@@ -440,3 +440,146 @@ void
 u3jit_boot() {
   cex = jit_context_create();
 }
+
+/* _to functions operate on tomes and TRANSFER their arguments
+ */
+
+static u3_noun
+_to_bind(u3_noun nec, u3_noun t)
+{
+  u3_noun set, pro;
+  if ( u3_nul == t ) {
+    pro = u3_nul;
+  }
+  else {
+    set = (u3_nul == nec)
+        ? u3_nul
+        : u3t(nec);
+    pro = u3nc(u3k(u3h(t)), u3qdi_uni(set, u3t(t)));
+  }
+  u3z(nec); u3z(t);
+  return pro;
+}
+
+static u3_noun
+_to_frag(u3_noun nec, u3_noun a)
+{
+  u3_noun pro;
+  if ( u3_nul == nec ) {
+    pro = u3_nul;
+  }
+  else {
+    c3_o    don_o = c3n;
+    u3_noun i     = u3h(nec);
+    while ( a > 1 ) {
+      if ( u3_nul == i ) {
+        pro = u3_nul;
+        don_o = c3y;
+        break;
+      }
+      else if ( c3y == u3h(i) ) {
+        pro = u3nc(
+          u3nc(c3y, u3k(u3r_at(a, u3t(i)))),
+          u3k(u3t(nec)));
+        don_o = c3y;
+        break;
+      }
+      else {
+        u3_noun b = u3qc_mas(a);
+        i = (2 == u3qc_cap(a))
+          ? u3h(u3t(i))
+          : u3t(u3t(i));
+        u3z(a);
+        a = b;
+      }
+    }
+    if ( c3n == don_o ) {
+      pro = (u3_nul == i)
+          ? u3_nul
+          : u3nc(u3k(i), u3k(u3t(nec)));
+    }
+  }
+  u3z(nec); u3z(a);
+  return pro;
+}
+
+/* u3jit_to functions are jets (and thus RETAIN) */
+u3_noun
+u3jit_to_bind(u3_noun cor)
+{
+  u3_noun nec, t;
+  if ( c3n == u3r_mean(cor, u3x_sam, &t, u3x_con_sam, &nec, 0) ) {
+    return u3m_bail(c3__exit);
+  }
+  return _to_bind(u3k(nec), u3k(t));
+}
+
+u3_noun
+u3jit_to_frag(u3_noun cor)
+{
+  u3_noun nec, a;
+
+  if ( c3n == u3r_mean(cor, u3x_sam, &a, u3x_con_sam, &nec, 0) ) {
+    return u3m_bail(c3__exit);
+  }
+  return _to_frag(u3k(nec), u3k(a));
+}
+
+u3_noun
+u3jit_to_nock(u3_noun cor)
+{
+  u3_noun nec, fol, hib, gal, pro;
+
+  if ( c3n == u3r_mean(cor, u3x_sam, &fol, u3x_con_sam, &nec, 0) ) {
+    return u3m_bail(c3__exit);
+  }
+
+  hib = u3h(fol);
+  gal = u3t(fol);
+
+  if ( c3y == u3du(hib) ) {
+    pro = u3n_slam_on(u3j_hook(u3k(cor), "auto"), u3k(fol));
+  }
+  else switch (hib) {
+    default:
+      return u3m_bail(c3__exit);
+    case 0:
+      pro = _to_frag(u3k(nec), u3k(gal));
+      break;
+    case 1:
+      pro = u3nc(u3nc(c3y, u3k(gal)), u3_nul);
+      break;
+    case 2:
+      pro = u3n_slam_on(u3j_hook(u3k(cor), "fix"), u3k(gal));
+      break;
+    case 3:
+      pro = u3n_slam_on(u3j_hook(u3k(cor), "deep"), u3k(gal));
+      break;
+    case 4:
+      pro = u3n_slam_on(u3j_hook(u3k(cor), "bump"), u3k(gal));
+      break;
+    case 5:
+      pro = u3n_slam_on(u3j_hook(u3k(cor), "same"), u3k(gal));
+      break;
+    case 6:
+      pro = u3n_slam_on(u3j_hook(u3k(cor), "cond"), u3k(gal));
+      break;
+    case 7:
+      pro = u3n_slam_on(u3j_hook(u3k(cor), "comp"), u3k(gal));
+      break;
+    case 8:
+      pro = u3n_slam_on(u3j_hook(u3k(cor), "push"), u3k(gal));
+      break;
+    case 9:
+      pro = u3n_slam_on(u3j_hook(u3k(cor), "kick"), u3k(gal));
+      break;
+    case 10:
+      pro = u3n_slam_on(u3j_hook(u3k(cor), "hint"), u3k(gal));
+      break;
+    case 11:
+      pro = u3_nul;
+      break;
+  }
+
+  return _to_bind(u3k(nec), pro);
+}

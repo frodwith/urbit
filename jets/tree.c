@@ -414,6 +414,24 @@ static u3j_core _down_d[] =
     {}
   };
 
+#define TO_JETS
+
+#ifdef TO_JETS
+extern u3_noun u3jit_to_nock(u3_noun);
+extern u3_noun u3jit_to_frag(u3_noun);
+extern u3_noun u3jit_to_bind(u3_noun);
+static u3j_harm _to_nock_a[] = {{".2", u3jit_to_nock, c3y}, {}};
+static u3j_harm _to_frag_a[] = {{".2", u3jit_to_frag, c3y}, {}};
+static u3j_harm _to_bind_a[] = {{".2", u3jit_to_bind, c3y}, {}};
+static u3j_core _to_d[] =
+  { { "nock", _to_nock_a },
+    { "frag", _to_frag_a },
+    { "bind", _to_bind_a },
+    {}
+  };
+#endif
+
+
 static u3j_harm _zuse__aes_ecba_en_a[] = {{".2", u3wea_ecba_en}, {}};
 static u3j_harm _zuse__aes_ecba_de_a[] = {{".2", u3wea_ecba_de}, {}};
 static u3j_harm _zuse__aes_ecbb_en_a[] = {{".2", u3wea_ecbb_en}, {}};
@@ -483,6 +501,9 @@ static u3j_core _zuse_d[] =
 
 static u3j_core _arvo_d[] =
   { { "down", 0, _down_d },
+#ifdef TO_JETS
+    { "to", 0, _to_d },
+#endif
     { "aes", 0, _zuse__aes_d },
     {}
   };
