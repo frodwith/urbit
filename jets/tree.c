@@ -422,12 +422,14 @@ extern u3_noun u3jit_to_frag(u3_noun);
 extern u3_noun u3jit_to_bind(u3_noun);
 extern u3_noun u3jit_to_deep(u3_noun);
 extern u3_noun u3jit_to_bump(u3_noun);
+extern u3_noun u3jit_to_same(u3_noun);
 extern u3_noun u3jit_to_fix(u3_noun);
 static u3j_harm _to_nock_a[] = {{".2", u3jit_to_nock, c3y}, {}};
 static u3j_harm _to_frag_a[] = {{".2", u3jit_to_frag, c3y}, {}};
 static u3j_harm _to_bind_a[] = {{".2", u3jit_to_bind, c3y}, {}};
 static u3j_harm _to_deep_a[] = {{".2", u3jit_to_deep, c3y}, {}};
 static u3j_harm _to_bump_a[] = {{".2", u3jit_to_bump, c3y}, {}};
+static u3j_harm _to_same_a[] = {{".2", u3jit_to_same, c3y}, {}};
 static u3j_harm _to_fix_a[] = {{".2", u3jit_to_fix, c3y}, {}};
 static u3j_core _to_d[] =
   { { "nock", _to_nock_a },
@@ -435,6 +437,7 @@ static u3j_core _to_d[] =
     { "bind", _to_bind_a },
     { "deep", _to_deep_a },
     { "bump", _to_bump_a },
+    { "same", _to_same_a },
     { "fix",  _to_fix_a },
     {}
   };
