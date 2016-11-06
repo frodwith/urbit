@@ -427,6 +427,7 @@ extern u3_noun u3jit_to_cond(u3_noun);
 extern u3_noun u3jit_to_auto(u3_noun);
 extern u3_noun u3jit_to_cons(u3_noun);
 extern u3_noun u3jit_to_comp(u3_noun);
+extern u3_noun u3jit_to_push(u3_noun);
 extern u3_noun u3jit_to_fix(u3_noun);
 static u3j_harm _to_nock_a[] = {{".2", u3jit_to_nock, c3y}, {}};
 static u3j_harm _to_frag_a[] = {{".2", u3jit_to_frag, c3y}, {}};
@@ -438,6 +439,7 @@ static u3j_harm _to_cond_a[] = {{".2", u3jit_to_cond, c3y}, {}};
 static u3j_harm _to_auto_a[] = {{".2", u3jit_to_auto, c3y}, {}};
 static u3j_harm _to_cons_a[] = {{".2", u3jit_to_cons, c3y}, {}};
 static u3j_harm _to_comp_a[] = {{".2", u3jit_to_comp, c3y}, {}};
+static u3j_harm _to_push_a[] = {{".2", u3jit_to_push, c3y}, {}};
 static u3j_harm _to_fix_a[]  = {{".2", u3jit_to_fix,  c3y}, {}};
 static u3j_core _to_d[] =
   { { "nock", _to_nock_a },
@@ -450,6 +452,7 @@ static u3j_core _to_d[] =
     { "auto", _to_auto_a },
     { "cons", _to_cons_a },
     { "comp", _to_comp_a },
+    { "push", _to_push_a },
     { "fix",  _to_fix_a  },
     {}
   };
