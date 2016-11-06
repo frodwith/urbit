@@ -769,6 +769,7 @@ _cj_fast(u3_noun bat, u3_noun cax)
   cop_u->cos_c = u3r_string(u3h(mop));
   cop_u->jax_l = jax_l;
   cop_u->axe_l = u3h(u3t(mop));
+  _cj_vec_init(&cop_u->dyc_u, sizeof(u3j_core*));
   if ( u3_nul != u3t(cuz) ) {
     cop_u->arm_u = (u3j_harm*) { 0 };
   }
@@ -779,7 +780,6 @@ _cj_fast(u3_noun bat, u3_noun cax)
      * seperately.
     */
     cop_u->arm_u = ham_u = calloc(2, sizeof(u3j_harm));
-    _cj_vec_init(&cop_u->dyc_u, sizeof(u3j_core*));
     ham_u->fcs_c = ".2";
     ham_u->fun_f = u3jit_compile(bat);
     ham_u->cop_u = cop_u;
