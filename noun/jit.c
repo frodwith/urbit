@@ -777,6 +777,40 @@ u3jit_to_jot(u3_noun cor)
     return _to_jot(u3k(nec), u3k(not));
   }
 }
+
+u3_noun
+u3jit_to_hint(u3_noun cor)
+{
+  u3_noun nec, hin, nex;
+  if ( c3n == u3r_mean(cor,
+        u3x_sam_2,   &hin,
+        u3x_sam_3,   &nex,
+        u3x_con_sam, &nec, 0) )
+  {
+    return u3m_bail(c3__exit);
+  }
+  else {
+    u3_noun roc, pro, not;
+    roc = u3i_molt(u3k(cor), u3x_sam, u3k(nex), 0);
+    pro = u3jit_to_nock(roc);
+    u3z(roc);
+    if ( c3n == u3du(hin) ) {
+      not = u3k(hin);
+    }
+    else {
+      u3_noun hit, pag;
+      roc = u3i_molt(u3k(cor), u3x_sam, u3k(u3t(hin)), 0);
+      hit = u3jit_to_nock(roc);
+      u3z(roc);
+      pag = (u3_nul == hit) ? u3_nul : u3k(u3h(hit));
+      not = u3nc(u3k(u3h(hin)), pag);
+      pro = _to_bind(hit, pro);
+    }
+    return _to_jot(pro, not);
+  }
+}
+
+u3_noun
 u3jit_to_kick(u3_noun cor)
 {
   u3_noun nec, axe, con;
@@ -922,7 +956,7 @@ u3jit_to_nock(u3_noun cor)
       pro = u3jit_to_kick(u3i_molt(u3k(cor), u3x_sam, u3k(gal), 0));
       break;
     case 10:
-      pro = u3n_slam_on(u3j_hook(u3k(cor), "hint"), u3k(gal));
+      pro = u3jit_to_hint(u3i_molt(u3k(cor), u3x_sam, u3k(gal), 0));
       break;
     case 11:
       pro = u3_nul;
