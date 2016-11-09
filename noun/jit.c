@@ -556,6 +556,18 @@ _to_frag(u3_noun nec, u3_noun a)
   return pro;
 }
 
+static u3_noun
+_to_jot(u3_noun nec, u3_noun not)
+{
+  u3_noun inx, mor, pro;
+  inx = u3qdi_wyt(u3t(nec));
+  mor = u3qdi_put(u3t(nec), u3nc(inx, not));
+  pro = u3nc(u3k(u3h(nec)), mor);
+  u3z(nec);
+  return pro;
+}
+
+
 /* u3jit_to functions are jets (and thus RETAIN) */
 u3_noun u3jit_to_nock(u3_noun);
 
@@ -752,6 +764,19 @@ u3jit_to_frag(u3_noun cor)
 }
 
 u3_noun
+u3jit_to_jot(u3_noun cor)
+{
+  u3_noun nec, not;
+  if ( c3n == u3r_mean(cor, u3x_sam, &not, u3x_con_sam, &nec, 0) ) {
+    return u3m_bail(c3__exit);
+  }
+  else if ( u3_nul == nec ) {
+    return u3_nul;
+  }
+  else {
+    return _to_jot(u3k(nec), u3k(not));
+  }
+}
 u3jit_to_kick(u3_noun cor)
 {
   u3_noun nec, axe, con;
