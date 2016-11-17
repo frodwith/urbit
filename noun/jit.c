@@ -4,7 +4,7 @@
 static jit_context_t cex;
 
 static jit_value_t _nock(jit_function_t, jit_value_t, u3_noun);
-static u3_noun _to_nock(u3_noun nec, u3_noun fol);
+//static u3_noun _to_nock(u3_noun nec, u3_noun fol);
 
 static jit_type_t
 _sig(c3_o ret_o, c3_w arg_w)
@@ -445,6 +445,24 @@ u3jit_boot() {
 /* _to functions operate on tomes and TRANSFER their arguments
  */
 static u3_noun
+_to_glue(u3_noun p, u3_noun q)
+{
+  if ( c3y == u3du(p) &&
+       c3y == u3h(p)  &&
+       c3y == u3du(q) &&
+       c3y == u3h(q) )
+  {
+    u3_noun n = u3nc(u3k(u3t(p)), u3k(u3t(q)));
+    u3z(p); u3z(q);
+    return u3nc(c3y, n);
+  }
+  else {
+    return u3nt(c3n, p, q);
+  }
+}
+
+#if 0
+static u3_noun
 _to_bind(u3_noun nec, u3_noun t)
 {
   u3_noun set, pro;
@@ -459,33 +477,6 @@ _to_bind(u3_noun nec, u3_noun t)
   }
   u3z(nec); u3z(t);
   return pro;
-}
-
-static u3_noun
-_to_cons(u3_noun nec, u3_noun t)
-{
-  if ( u3_nul == nec && u3_nul == t ) {
-    return u3_nul;
-  }
-  else {
-    u3_noun pag, hen, het;
-    if ( (u3_nul != nec)        &&
-         (u3_nul != t)          &&
-         (c3y == u3h(u3h(nec))) &&
-         (c3y == u3h(u3h(t))) )
-    {
-      pag = u3nt(c3y, u3k(u3t(u3h(nec))), u3k(u3t(u3h(t))));
-    }
-    else {
-      u3_noun p, q;
-      p = (u3_nul == nec) ? u3_nul : u3k(u3h(nec));
-      q = (u3_nul == t)   ? u3_nul : u3k(u3h(t));
-      pag = u3nt(c3n, p, q);
-    }
-    hen = (u3_nul == nec) ? u3_nul : u3t(nec);
-    het = (u3_nul == t)   ? u3_nul : u3t(t);
-    return u3nc(pag, u3qdi_uni(hen, het));
-  }
 }
 
 static u3_noun
@@ -785,8 +776,23 @@ _to_nock(u3_noun nec, u3_noun fol)
 
   return _to_bind(nec, pro);
 }
+#endif
 
 /* u3jit_to functions are jets (and thus RETAIN) */
+
+u3_noun
+u3jit_tome_glue(u3_noun cor)
+{
+  u3_noun p, q;
+  if ( c3n == u3r_mean(cor, u3x_sam_2, &p, u3x_sam_3, &q, 0) ) {
+    return u3m_bail(c3__exit);
+  }
+  else {
+    return _to_glue(u3k(p), u3k(q));
+  }
+}
+
+#if 0
 u3_noun
 u3jit_to_auto(u3_noun cor)
 {
@@ -1003,3 +1009,4 @@ u3jit_to_same(u3_noun cor)
     return _to_same(u3k(nec), u3k(a), u3k(b));
   }
 }
+#endif
