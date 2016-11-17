@@ -476,14 +476,14 @@ static u3j_core _tome__to_d[] =
 #endif
 //extern u3_noun u3jit_tome_fake(u3_noun);
 extern u3_noun u3jit_tome_glue(u3_noun);
-//extern u3_noun u3jit_tome_seg(u3_noun);
+extern u3_noun u3jit_tome_seg(u3_noun);
 //static u3j_harm _tome_fake_a[] = {{".2", u3jit_tome_fake, c3y}, {}};
 static u3j_harm _tome_glue_a[] = {{".2", u3jit_tome_glue, c3y}, {}};
-//static u3j_harm _tome_seg_a[]  = {{".2", u3jit_tome_seg,  c3y}, {}};
+static u3j_harm _tome_seg_a[]  = {{".2", u3jit_tome_seg,  c3y}, {}};
 static u3j_core _tome_d[] =
   { //{ "fake", _tome_fake_a },
     { "glue", _tome_glue_a },
-    //{ "seg",  _tome_seg_a  },
+    { "seg",  _tome_seg_a  },
     //{ "to", 0, _tome__to_d },
     {}
   };
