@@ -990,6 +990,23 @@ u3jit_to_bump(u3_noun cor)
 }
 
 u3_noun
+u3jit_to_comp(u3_noun cor)
+{
+  u3_noun e, sun, fol;
+  if ( c3n == u3r_mean(cor,
+        u3x_sam_2, &sun,
+        u3x_sam_3, &fol,
+        u3x_con,   &e, 0) )
+  {
+    return u3m_bail(c3__exit);
+  }
+  else {
+    u3_noun seb = u3n_slam_on(u3j_hook(u3k(e), "nock"), u3k(sun));
+    return u3n_slam_on(u3j_hook(seb, "nock"), u3k(fol));
+  }
+}
+
+u3_noun
 u3jit_to_deep(u3_noun cor)
 {
   u3_noun e, fol;
@@ -1160,22 +1177,6 @@ u3jit_to_cond(u3_noun cor)
   }
   else {
     return _to_cond(u3k(nec), u3k(tys), u3k(yes), u3k(no));
-  }
-}
-
-u3_noun
-u3jit_to_comp(u3_noun cor)
-{
-  u3_noun nec, sun, fol;
-  if ( c3n == u3r_mean(cor,
-        u3x_sam_2,   &sun,
-        u3x_sam_3,   &fol,
-        u3x_con_sam, &nec, 0) )
-  {
-    return u3m_bail(c3__exit);
-  }
-  else {
-    return _to_comp(u3k(nec), u3k(sun), u3k(fol));
   }
 }
 

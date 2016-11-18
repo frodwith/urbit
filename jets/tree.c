@@ -419,8 +419,7 @@ static u3j_core _down_d[] =
 #ifdef TO_JETS
 extern u3_noun u3jit_to_auto(u3_noun);
 extern u3_noun u3jit_to_bump(u3_noun);
-//extern u3_noun u3jit_to_chap(u3_noun);
-//extern u3_noun u3jit_to_comp(u3_noun);
+extern u3_noun u3jit_to_comp(u3_noun);
 //extern u3_noun u3jit_to_cond(u3_noun);
 extern u3_noun u3jit_to_deep(u3_noun);
 //extern u3_noun u3jit_to_edit(u3_noun);
@@ -436,8 +435,7 @@ extern u3_noun u3jit_to_same(u3_noun);
 extern u3_noun u3jit_to_swap(u3_noun);
 static u3j_harm _tome__to_auto_a[] = {{".2", u3jit_to_auto, c3y}, {}};
 static u3j_harm _tome__to_bump_a[] = {{".2", u3jit_to_bump, c3y}, {}};
-//static u3j_harm _tome__to_chap_a[] = {{".2", u3jit_to_chap, c3y}, {}};
-//static u3j_harm _tome__to_comp_a[] = {{".2", u3jit_to_comp, c3y}, {}};
+static u3j_harm _tome__to_comp_a[] = {{".2", u3jit_to_comp, c3y}, {}};
 //static u3j_harm _tome__to_cond_a[] = {{".2", u3jit_to_cond, c3y}, {}};
 static u3j_harm _tome__to_deep_a[] = {{".2", u3jit_to_deep, c3y}, {}};
 //static u3j_harm _tome__to_edit_a[] = {{".2", u3jit_to_edit, c3y}, {}};
@@ -454,8 +452,7 @@ static u3j_harm _tome__to_swap_a[] = {{".2", u3jit_to_swap, c3y}, {}};
 static u3j_core _tome__to_d[] =
   { { "auto", _tome__to_auto_a },
     { "bump", _tome__to_bump_a },
-//    { "chap", _tome__to_chap_a },
-//    { "comp", _tome__to_comp_a },
+    { "comp", _tome__to_comp_a },
 //    { "cond", _tome__to_cond_a },
     { "deep", _tome__to_deep_a },
 //    { "edit", _tome__to_edit_a },
