@@ -423,7 +423,7 @@ extern u3_noun u3jit_to_comp(u3_noun);
 extern u3_noun u3jit_to_cond(u3_noun);
 extern u3_noun u3jit_to_deep(u3_noun);
 extern u3_noun u3jit_to_fix(u3_noun);
-//extern u3_noun u3jit_to_frag(u3_noun);
+extern u3_noun u3jit_to_frag(u3_noun);
 //extern u3_noun u3jit_to_hint(u3_noun);
 //extern u3_noun u3jit_to_kick(u3_noun);
 //extern u3_noun u3jit_to_nock(u3_noun);
@@ -438,7 +438,7 @@ static u3j_harm _tome__to_comp_a[] = {{".2", u3jit_to_comp, c3y}, {}};
 static u3j_harm _tome__to_cond_a[] = {{".2", u3jit_to_cond, c3y}, {}};
 static u3j_harm _tome__to_deep_a[] = {{".2", u3jit_to_deep, c3y}, {}};
 static u3j_harm _tome__to_fix_a[]  = {{".2", u3jit_to_fix, c3y}, {}};
-//static u3j_harm _tome__to_frag_a[] = {{".2", u3jit_to_frag, c3y}, {}};
+static u3j_harm _tome__to_frag_a[] = {{".2", u3jit_to_frag, c3y}, {}};
 //static u3j_harm _tome__to_hint_a[] = {{".2", u3jit_to_hint, c3y}, {}};
 //static u3j_harm _tome__to_kick_a[] = {{".2", u3jit_to_kick, c3y}, {}};
 //static u3j_harm _tome__to_nock_a[] = {{".2", u3jit_to_nock, c3y}, {}};
@@ -454,7 +454,7 @@ static u3j_core _tome__to_d[] =
     { "cond", _tome__to_cond_a },
     { "deep", _tome__to_deep_a },
     { "fix",  _tome__to_fix_a },
-//    { "frag", _tome__to_frag_a },
+    { "frag", _tome__to_frag_a },
 //    { "hint", _tome__to_hint_a },
 //    { "kick", _tome__to_kick_a },
 //    { "nock", _tome__to_nock_a },
