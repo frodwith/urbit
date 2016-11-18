@@ -990,6 +990,47 @@ u3jit_to_bump(u3_noun cor)
 }
 
 u3_noun
+u3jit_to_deep(u3_noun cor)
+{
+  u3_noun e, fol;
+
+  if ( c3n == u3r_mean(cor, u3x_sam, &fol, u3x_con, &e, 0) )
+  {
+    return u3m_bail(c3__exit);
+  }
+  else {
+    u3_noun cen;
+    u3k(fol);
+    {
+      u3_noun r, pro = _to_nec(u3n_slam_on(u3j_hook(u3k(e), "nock"), fol));
+      if ( u3_nul == pro ) {
+        r = u3_nul;
+      }
+      else if ( c3n == u3du(pro) ) {
+        u3m_bail(c3__exit);
+      }
+      else {
+        u3_noun p = u3h(pro);
+        if ( c3n == u3du(p) ) {
+          u3m_bail(c3__exit);
+        }
+        else if ( c3y == u3h(p) ) {
+          r = u3nc(c3y, u3du(u3t(p)));
+        }
+        else if ( c3n == u3h(p) ) {
+          r = u3nc(c3y, c3y);
+        }
+        else {
+          u3m_bail(c3__exit);
+        }
+      }
+      cen = _to_swap(pro, r);
+    }
+    return u3i_molt(u3k(e), u3x_sam, cen, 0);
+  }
+}
+
+u3_noun
 u3jit_to_peek(u3_noun cor)
 {
   u3_noun nec, e;
