@@ -417,63 +417,61 @@ static u3j_core _down_d[] =
 #define TO_JETS
 
 #ifdef TO_JETS
-#if 0
 extern u3_noun u3jit_to_auto(u3_noun);
-extern u3_noun u3jit_to_bump(u3_noun);
-extern u3_noun u3jit_to_chap(u3_noun);
-extern u3_noun u3jit_to_comp(u3_noun);
-extern u3_noun u3jit_to_cond(u3_noun);
-extern u3_noun u3jit_to_deep(u3_noun);
-extern u3_noun u3jit_to_edit(u3_noun);
-extern u3_noun u3jit_to_fix(u3_noun);
-extern u3_noun u3jit_to_frag(u3_noun);
-extern u3_noun u3jit_to_hint(u3_noun);
-extern u3_noun u3jit_to_hiss(u3_noun);
-extern u3_noun u3jit_to_kick(u3_noun);
-extern u3_noun u3jit_to_nock(u3_noun);
+//extern u3_noun u3jit_to_bump(u3_noun);
+//extern u3_noun u3jit_to_chap(u3_noun);
+//extern u3_noun u3jit_to_comp(u3_noun);
+//extern u3_noun u3jit_to_cond(u3_noun);
+//extern u3_noun u3jit_to_deep(u3_noun);
+//extern u3_noun u3jit_to_edit(u3_noun);
+//extern u3_noun u3jit_to_fix(u3_noun);
+//extern u3_noun u3jit_to_frag(u3_noun);
+//extern u3_noun u3jit_to_hint(u3_noun);
+//extern u3_noun u3jit_to_kick(u3_noun);
+//extern u3_noun u3jit_to_nock(u3_noun);
 extern u3_noun u3jit_to_peek(u3_noun);
-extern u3_noun u3jit_to_push(u3_noun);
-extern u3_noun u3jit_to_same(u3_noun);
-extern u3_noun u3jit_to_swap(u3_noun);
+//extern u3_noun u3jit_to_push(u3_noun);
+extern u3_noun u3jit_to_pros(u3_noun);
+//extern u3_noun u3jit_to_same(u3_noun);
+//extern u3_noun u3jit_to_swap(u3_noun);
 static u3j_harm _tome__to_auto_a[] = {{".2", u3jit_to_auto, c3y}, {}};
-static u3j_harm _tome__to_bump_a[] = {{".2", u3jit_to_bump, c3y}, {}};
-static u3j_harm _tome__to_chap_a[] = {{".2", u3jit_to_chap, c3y}, {}};
-static u3j_harm _tome__to_comp_a[] = {{".2", u3jit_to_comp, c3y}, {}};
-static u3j_harm _tome__to_cond_a[] = {{".2", u3jit_to_cond, c3y}, {}};
-static u3j_harm _tome__to_deep_a[] = {{".2", u3jit_to_deep, c3y}, {}};
-static u3j_harm _tome__to_edit_a[] = {{".2", u3jit_to_edit, c3y}, {}};
-static u3j_harm _tome__to_fix_a[]  = {{".2", u3jit_to_fix, c3y}, {}};
-static u3j_harm _tome__to_frag_a[] = {{".2", u3jit_to_frag, c3y}, {}};
-static u3j_harm _tome__to_hint_a[] = {{".2", u3jit_to_hint, c3y}, {}};
-static u3j_harm _tome__to_hiss_a[] = {{".2", u3jit_to_hiss, c3y}, {}};
-static u3j_harm _tome__to_kick_a[] = {{".2", u3jit_to_kick, c3y}, {}};
-static u3j_harm _tome__to_nock_a[] = {{".2", u3jit_to_nock, c3y}, {}};
+//static u3j_harm _tome__to_bump_a[] = {{".2", u3jit_to_bump, c3y}, {}};
+//static u3j_harm _tome__to_chap_a[] = {{".2", u3jit_to_chap, c3y}, {}};
+//static u3j_harm _tome__to_comp_a[] = {{".2", u3jit_to_comp, c3y}, {}};
+//static u3j_harm _tome__to_cond_a[] = {{".2", u3jit_to_cond, c3y}, {}};
+//static u3j_harm _tome__to_deep_a[] = {{".2", u3jit_to_deep, c3y}, {}};
+//static u3j_harm _tome__to_edit_a[] = {{".2", u3jit_to_edit, c3y}, {}};
+//static u3j_harm _tome__to_fix_a[]  = {{".2", u3jit_to_fix, c3y}, {}};
+//static u3j_harm _tome__to_frag_a[] = {{".2", u3jit_to_frag, c3y}, {}};
+//static u3j_harm _tome__to_hint_a[] = {{".2", u3jit_to_hint, c3y}, {}};
+//static u3j_harm _tome__to_kick_a[] = {{".2", u3jit_to_kick, c3y}, {}};
+//static u3j_harm _tome__to_nock_a[] = {{".2", u3jit_to_nock, c3y}, {}};
 static u3j_harm _tome__to_peek_a[] = {{".2", u3jit_to_peek, c3y}, {}};
-static u3j_harm _tome__to_push_a[] = {{".2", u3jit_to_push, c3y}, {}};
-static u3j_harm _tome__to_same_a[] = {{".2", u3jit_to_same, c3y}, {}};
-static u3j_harm _tome__to_swap_a[] = {{".2", u3jit_to_swap, c3y}, {}};
+//static u3j_harm _tome__to_push_a[] = {{".2", u3jit_to_push, c3y}, {}};
+static u3j_harm _tome__to_pros_a[] = {{".2", u3jit_to_pros, c3y}, {}};
+//static u3j_harm _tome__to_same_a[] = {{".2", u3jit_to_same, c3y}, {}};
+//static u3j_harm _tome__to_swap_a[] = {{".2", u3jit_to_swap, c3y}, {}};
 static u3j_core _tome__to_d[] =
   { { "auto", _tome__to_auto_a },
-    { "bump", _tome__to_bump_a },
-    { "chap", _tome__to_chap_a },
-    { "comp", _tome__to_comp_a },
-    { "cond", _tome__to_cond_a },
-    { "deep", _tome__to_deep_a },
-    { "edit", _tome__to_edit_a },
-    { "fix",  _tome__to_fix_a },
-    { "frag", _tome__to_frag_a },
-    { "hint", _tome__to_hint_a },
-    { "hiss", _tome__to_hiss_a },
-    { "kick", _tome__to_kick_a },
-    { "nock", _tome__to_nock_a },
+//    { "bump", _tome__to_bump_a },
+//    { "chap", _tome__to_chap_a },
+//    { "comp", _tome__to_comp_a },
+//    { "cond", _tome__to_cond_a },
+//    { "deep", _tome__to_deep_a },
+//    { "edit", _tome__to_edit_a },
+//    { "fix",  _tome__to_fix_a },
+//    { "frag", _tome__to_frag_a },
+//    { "hint", _tome__to_hint_a },
+//    { "kick", _tome__to_kick_a },
+//    { "nock", _tome__to_nock_a },
     { "peek", _tome__to_peek_a },
-    { "push", _tome__to_push_a },
-    { "same", _tome__to_same_a },
-    { "swap", _tome__to_swap_a },
+//    { "push", _tome__to_push_a },
+    { "pros", _tome__to_pros_a },
+//    { "same", _tome__to_same_a },
+//    { "swap", _tome__to_swap_a },
     {}
   };
 
-#endif
 //extern u3_noun u3jit_tome_fake(u3_noun);
 extern u3_noun u3jit_tome_glue(u3_noun);
 extern u3_noun u3jit_tome_seg(u3_noun);
@@ -484,7 +482,7 @@ static u3j_core _tome_d[] =
   { //{ "fake", _tome_fake_a },
     { "glue", _tome_glue_a },
     { "seg",  _tome_seg_a  },
-    //{ "to", 0, _tome__to_d },
+    { "to", 0, _tome__to_d },
     {}
   };
 #endif
