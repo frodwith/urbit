@@ -947,11 +947,11 @@ u3jit_to_auto(u3_noun cor)
       u3_noun hed = u3n_slam_on(u3j_hook(u3k(e), "nock"), pol),
               hec = _to_nec(u3k(hed)),
               cen = _to_peek(nec, u3k(hec)),
-              pek = u3i_molt(u3k(hed), u3x_sam, cen, 0),
+              pek = _to_to(u3k(hed), cen),
               tal = u3n_slam_on(u3j_hook(pek, "nock"), qol),
               tec = _to_nec(u3k(tal)),
               goo = _to_glue(_to_chap(hec), _to_chap(u3k(tec)));
-      return u3i_molt(tal, u3x_sam, _to_swap(tec, goo), 0);
+      return _to_to(tal, _to_swap(tec, goo));
     }
   }
 }
@@ -990,7 +990,7 @@ u3jit_to_bump(u3_noun cor)
       }
       cen = _to_swap(pro, r);
     }
-    return u3i_molt(u3k(e), u3x_sam, cen, 0);
+    return _to_to(u3k(e), cen);
   }
 }
 
@@ -1015,7 +1015,7 @@ u3jit_to_cond(u3_noun cor)
       u3_noun t = _to_nec(u3n_slam_on(u3j_hook(u3k(e), "nock"), tys));
       if ( u3_nul == t ) {
         u3z(nec); u3z(yes); u3z(no);
-        return u3i_molt(u3k(e), u3x_sam, u3_nul, 0);
+        return _to_to(u3k(e), u3_nul);
       }
       else if ( c3n == u3du(t)      ||
                 c3n == u3du(u3h(t)) ||
@@ -1027,7 +1027,7 @@ u3jit_to_cond(u3_noun cor)
       else {
         u3_noun cen, ne, fol, pag;
         cen = _to_pros(nec, u3k(u3t(t)));
-        ne  = u3i_molt(u3k(e), u3x_sam, cen, 0);
+        ne  = _to_to(u3k(e), cen);
         pag = u3h(t);
         if ( u3_nul == pag    ||
              c3n == u3du(pag) ||
@@ -1109,7 +1109,7 @@ u3jit_to_deep(u3_noun cor)
       }
       cen = _to_swap(pro, r);
     }
-    return u3i_molt(u3k(e), u3x_sam, cen, 0);
+    return _to_to(u3k(e), cen);
   }
 }
 
@@ -1126,7 +1126,6 @@ u3jit_to_fix(u3_noun cor)
   }
   else {
     u3_noun cen, nec;
-    u3m_p("fix", 0);
     nec = _to_nec(u3k(e));
     u3k(sun); u3k(fon);
     {
@@ -1174,7 +1173,7 @@ u3jit_to_peek(u3_noun cor)
       u3m_bail(c3__exit);
     }
     else {
-      return u3i_molt(u3k(e), u3x_sam, _to_peek(u3k(nec), cen), 0);
+      return _to_to(u3k(e), _to_peek(u3k(nec), cen));
     }
   }
 }
@@ -1187,8 +1186,7 @@ u3jit_to_pros(u3_noun cor)
     return u3m_bail(c3__exit);
   }
   else {
-    u3_noun cen = _to_pros(_to_nec(u3k(e)), u3k(fut));
-    return u3i_molt(u3k(e), u3x_sam, cen, 0);
+    return _to_to(u3k(e), _to_pros(_to_nec(u3k(e)), u3k(fut)));
   }
 }
 
@@ -1235,7 +1233,7 @@ u3jit_to_same(u3_noun cor)
       }
       cen = _to_swap(pro, r);
     }
-    return u3i_molt(u3k(e), u3x_sam, cen, 0);
+    return _to_to(u3k(e), cen);
   }
 }
 
@@ -1247,8 +1245,7 @@ u3jit_to_swap(u3_noun cor)
     return u3m_bail(c3__exit);
   }
   else {
-    u3_noun cen = _to_swap(_to_nec(u3k(e)), u3k(p));
-    return u3i_molt(u3k(e), u3x_sam, cen, 0);
+    return _to_to(u3k(e), _to_swap(_to_nec(u3k(e)), u3k(p)));
   }
 }
 
