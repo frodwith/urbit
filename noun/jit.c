@@ -1202,6 +1202,45 @@ u3jit_to_frag(u3_noun cor)
 }
 
 u3_noun
+u3jit_to_hint(u3_noun cor)
+{
+  u3_noun e, hin, nex;
+  if ( c3n == u3r_mean(cor,
+        u3x_sam_2, &hin,
+        u3x_sam_3, &nex,
+        u3x_con,   &e, 0) )
+  {
+    return u3m_bail(c3__exit);
+  }
+  else {
+    u3_noun nec, cen;
+    nec = _to_nec(u3k(e));
+    u3k(hin); u3k(nex);
+    {
+      u3_noun zep, hod, pot, his, not;
+      if ( c3n == u3du(hin) ) {
+        zep = hin;
+        hod = u3_nul;
+        pot = _to_nec(u3n_slam_on(u3j_hook(u3k(e), "nock"), u3k(nex)));
+      }
+      else {
+        u3_noun dyt, en;
+        dyt = _to_nec(u3n_slam_on(u3j_hook(u3k(e), "nock"), u3k(u3t(hin))));
+        zep = u3k(u3h(hin));
+        hod = u3nc(u3_nul, u3k(dyt));
+        en  = _to_to(u3k(e), _to_peek(u3k(nec), dyt));
+        pot = _to_nec(u3n_slam_on(u3j_hook(en, "nock"), u3k(nex)));
+        u3z(hin);
+      }
+      his = (u3_nul == nec) ? u3_nul : u3k(u3t(nec));
+      not = u3nc(zep, u3nq(hod, nec, nex, u3k(pot)));
+      cen = _to_pros(pot, u3nc(not, his));
+    }
+    return _to_to(u3k(e), cen);
+  }
+}
+
+u3_noun
 u3jit_to_peek(u3_noun cor)
 {
   u3_noun nec, e;
