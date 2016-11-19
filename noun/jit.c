@@ -1232,6 +1232,32 @@ u3jit_to_pros(u3_noun cor)
 }
 
 u3_noun
+u3jit_to_push(u3_noun cor)
+{
+  u3_noun e, hen, fol;
+  if ( c3n == u3r_mean(cor,
+        u3x_sam_2, &hen,
+        u3x_sam_3, &fol,
+        u3x_con,   &e, 0) )
+  {
+    return u3m_bail(c3__exit);
+  }
+  else {
+    u3_noun nec, cen;
+    nec = _to_nec(u3k(e));
+    u3k(hen); u3k(fol);
+    {
+      u3_noun hed, sup, seb;
+      hed = _to_nec(u3n_slam_on(u3j_hook(u3k(e), "nock"), hen));
+      sup = _tome_glue(_to_chap(u3k(hed)), _to_chap(nec));
+      seb = _to_to(u3k(e), _to_swap(hed, sup));
+      cen = _to_nec(u3n_slam_on(u3j_hook(seb, "nock"), fol));
+    }
+    return _to_to(u3k(e), cen);
+  }
+}
+
+u3_noun
 u3jit_to_same(u3_noun cor)
 {
   u3_noun e, a, b;

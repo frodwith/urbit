@@ -428,7 +428,7 @@ extern u3_noun u3jit_to_frag(u3_noun);
 //extern u3_noun u3jit_to_kick(u3_noun);
 //extern u3_noun u3jit_to_nock(u3_noun);
 extern u3_noun u3jit_to_peek(u3_noun);
-//extern u3_noun u3jit_to_push(u3_noun);
+extern u3_noun u3jit_to_push(u3_noun);
 extern u3_noun u3jit_to_pros(u3_noun);
 extern u3_noun u3jit_to_same(u3_noun);
 extern u3_noun u3jit_to_swap(u3_noun);
@@ -443,7 +443,7 @@ static u3j_harm _tome__to_frag_a[] = {{".2", u3jit_to_frag, c3y}, {}};
 //static u3j_harm _tome__to_kick_a[] = {{".2", u3jit_to_kick, c3y}, {}};
 //static u3j_harm _tome__to_nock_a[] = {{".2", u3jit_to_nock, c3y}, {}};
 static u3j_harm _tome__to_peek_a[] = {{".2", u3jit_to_peek, c3y}, {}};
-//static u3j_harm _tome__to_push_a[] = {{".2", u3jit_to_push, c3y}, {}};
+static u3j_harm _tome__to_push_a[] = {{".2", u3jit_to_push, c3y}, {}};
 static u3j_harm _tome__to_pros_a[] = {{".2", u3jit_to_pros, c3y}, {}};
 static u3j_harm _tome__to_same_a[] = {{".2", u3jit_to_same, c3y}, {}};
 static u3j_harm _tome__to_swap_a[] = {{".2", u3jit_to_swap, c3y}, {}};
@@ -459,7 +459,7 @@ static u3j_core _tome__to_d[] =
 //    { "kick", _tome__to_kick_a },
 //    { "nock", _tome__to_nock_a },
     { "peek", _tome__to_peek_a },
-//    { "push", _tome__to_push_a },
+    { "push", _tome__to_push_a },
     { "pros", _tome__to_pros_a },
     { "same", _tome__to_same_a },
     { "swap", _tome__to_swap_a },
