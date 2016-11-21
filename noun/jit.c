@@ -442,9 +442,9 @@ u3jit_boot() {
   cex = jit_context_create();
 }
 
-/* _tome_fake: PRODUCE a real noun from a tome, where all the
+/* _tome_fake: PRODUCE a real noun from a page, where all the
  *             unknown pieces have been replaced by 0, and the
- *             known pieces are untagged. `nec` is RETAINED.
+ *             known pieces are untagged. `pag` is RETAINED.
  */
 static u3_noun
 _tome_fake_in(u3_noun pag)
@@ -1133,6 +1133,19 @@ u3jit_to_kick(u3_noun cor)
   }
   else {
     return _to_to(u3k(e), _to_kick(_to_nec(u3k(e)), u3k(axe), u3k(con)));
+  }
+}
+
+u3_noun
+u3jit_to_nock(u3_noun cor)
+{
+  u3_noun e, fol;
+  if ( c3n == u3r_mean(cor, u3x_sam, &fol, u3x_con, &e, 0) )
+  {
+    return u3m_bail(c3__exit);
+  }
+  else {
+    return _to_to(u3k(e), _to_nock(_to_nec(u3k(e)), u3k(fol)));
   }
 }
 
