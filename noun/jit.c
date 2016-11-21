@@ -442,6 +442,32 @@ u3jit_boot() {
   cex = jit_context_create();
 }
 
+/* _tome_fake: PRODUCE a real noun from a tome, where all the
+ *             unknown pieces have been replaced by 0, and the
+ *             known pieces are untagged. `nec` is RETAINED.
+ */
+static u3_noun
+_tome_fake_in(u3_noun pag)
+{
+  if ( u3_nul == pag) {
+    return 0;
+  }
+  else if ( c3y == u3h(pag) ) {
+    return u3k(u3t(pag));
+  }
+  else {
+    return u3nc(
+      _tome_fake_in(u3h(u3t(pag))),
+      _tome_fake_in(u3t(u3t(pag))));
+  }
+}
+
+static u3_noun
+_tome_fake(u3_noun nec)
+{
+  return (u3_nul == nec) ? 0 : _tome_fake_in(u3h(nec));
+}
+
 /* _to functions operate on tomes and TRANSFER their arguments
  */
 static u3_noun _to_pros(u3_noun, u3_noun);
@@ -704,32 +730,6 @@ _to_deep(u3_noun nec, u3_noun fol)
   else {
     return u3i_molt(pro, 2, u3nc(c3y, c3y), 0);
   }
-}
-
-static u3_noun
-_to_fake_in(u3_noun pag)
-{
-  if ( u3_nul == pag) {
-    return 0;
-  }
-  else if ( c3y == u3h(pag) ) {
-    return u3k(u3t(pag));
-  }
-  else {
-    return u3nc(
-      _to_fake_in(u3h(u3t(pag))),
-      _to_fake_in(u3t(u3t(pag))));
-  }
-}
-
-/* _to_fake: PRODUCE a real noun from a tome, where all the
- *           unknown pieces have been replaced by 0, and the
- *           known pieces are untagged. `nec` is RETAINED.
- */
-static u3_noun
-_to_fake(u3_noun nec)
-{
-  return (u3_nul == nec) ? 0 : _to_fake_in(u3h(nec));
 }
 
 static u3_noun
@@ -1228,9 +1228,27 @@ u3jit_to_hint(u3_noun cor)
         dyt = _to_nec(u3n_slam_on(u3j_hook(u3k(e), "nock"), u3k(u3t(hin))));
         zep = u3k(u3h(hin));
         hod = u3nc(u3_nul, u3k(dyt));
-        en  = _to_to(u3k(e), _to_peek(u3k(nec), dyt));
+        en  = _to_to(u3k(e), _to_peek(u3k(nec), u3k(dyt)));
         pot = _to_nec(u3n_slam_on(u3j_hook(en, "nock"), u3k(nex)));
-        u3z(hin);
+        /*  Jet-only semantics: during boot especially, but also with rarely
+        **  used fast cores, we could try to kick a formula that is intended
+        **  to be jetted (like decrement) but hasn't been registered yet. To
+        **  enable kick:to to see the jets, we register fast hints as we
+        **  encounter them if they have a computable clue and battery.
+        **/
+        if ( c3__fast == zep && u3_nul != dyt ) {
+          if ( c3n == u3du(dyt) ) {
+            u3m_bail(c3__exit);
+          }
+          else if ( c3y == u3h(dyt) ) {
+            u3_noun baf = _to_frag(u3k(pot), 2);
+            if ( u3_nul != baf && c3y == u3h(baf) ) {
+              u3j_mine(u3k(u3t(dyt)), _tome_fake(pot));
+            }
+            u3z(baf);
+          }
+        }
+        u3z(hin); u3z(dyt);
       }
       his = (u3_nul == nec) ? u3_nul : u3k(u3t(nec));
       not = u3nc(zep, u3nq(hod, nec, nex, u3k(pot)));
@@ -1239,6 +1257,59 @@ u3jit_to_hint(u3_noun cor)
     return _to_to(u3k(e), cen);
   }
 }
+
+u3_noun
+u3jit_to_kick(u3_noun cor)
+{
+  u3_noun e, axe, con;
+  if ( c3n == u3r_mean(cor,
+        u3x_sam_2, &axe,
+        u3x_sam_3, &con,
+        u3x_con,   &e, 0) )
+  {
+    return u3m_bail(c3__exit);
+  }
+  else {
+    u3_noun nec, cen;
+    nec = _to_nec(u3k(e));
+    u3k(axe); u3k(con);
+    {
+      u3_noun fop, cot;
+      cot = _to_nec(u3n_slam_on(u3j_hook(u3k(e), "nock"), con));
+      fop = _to_frag(u3k(cot), u3k(axe));
+      if ( u3_nul == fop ) {
+        cen = u3_nul;
+      }
+      else if ( c3n == u3du(fop) ) {
+        u3m_bail(c3__exit);
+      }
+      else if ( c3n == u3h(fop) ) {
+        cen = u3_nul;
+      }
+      else if ( c3y == u3h(fop) ) {
+        u3_noun fak, pro;
+        fak = _tome_fake(nec);
+        pro = u3j_kick(fak, axe);
+        if ( u3_none != pro ) {
+          cen = u3nc(u3nc(c3y, pro), u3k(u3t(cot)));
+          u3z(cot);
+        }
+        else {
+          u3_noun en = _to_to(u3k(e), cot);
+          pro = u3n_slam_on(u3j_hook(en, "nock"), u3k(u3t(fop)));
+          cen = _to_nec(pro);
+          u3z(fak);
+        }
+        u3z(fop); u3z(axe);
+      }
+      else {
+        u3m_bail(c3__exit);
+      }
+    }
+    return _to_to(u3k(e), cen);
+  }
+}
+
 
 u3_noun
 u3jit_to_peek(u3_noun cor)
