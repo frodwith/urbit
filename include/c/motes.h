@@ -508,6 +508,7 @@
 #   define c3__high   c3_s4('h','i','g','h')
 #   define c3__hike   c3_s4('h','i','k','e')
 #   define c3__hill   c3_s4('h','i','l','l')
+#   define c3__hilt   c3_s4('h','i','l','t')
 #   define c3__hind   c3_s4('h','i','n','d')
 #   define c3__hint   c3_s4('h','i','n','t')
 #   define c3__hit    c3_s3('h','i','t')

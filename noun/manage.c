@@ -974,11 +974,26 @@ u3m_soft_run(u3_noun gul,
              u3_noun aga,
              u3_noun agb)
 {
-  u3_noun why = 0, pro;
+  c3_w    pad_w = (1 > 18);
+  u3_noun why   = 0;
+  u3_noun pro;
+
+  /*  temporary hack; we need an actual compactor
+  */
+  if ( (pad_w + c3_wiseof(u3a_road)) >= u3a_open(u3R) ) {
+    u3_noun pro;
+
+    fprintf(stderr, "soft_run: short road\r\n");
+    pro = fun_f(aga, agb);
+    fprintf(stderr, "soft_run: finished\r\n");
+
+    u3z(gul);
+    return u3nc(0, pro);
+  }
 
   /* Record the cap, and leap.
   */
-  u3m_hate(1 << 18);
+  u3m_hate(pad_w);
  
   /* Configure the new road.
   */

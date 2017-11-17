@@ -646,6 +646,17 @@
         return ret;
       }
 
+      case c3__hilt: u3x_cell(u3t(gen), &p_gen, &q_gen);
+      _mint_used();
+      {
+        u3_noun hum = _mint_in(van, sut, gol, q_gen);
+
+        u3_noun ret = u3nc(u3qf_hilt(p_gen, u3k(u3h(hum))),
+                           u3k(u3t(hum)));
+        u3z(hum);
+        return ret;
+      }
+
       case c3__ktts: u3x_cell(u3t(gen), &p_gen, &q_gen);
       _mint_used();
       {

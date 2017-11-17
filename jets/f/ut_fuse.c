@@ -132,6 +132,10 @@
         u3z(vot);
         return ret;
       }
+      case c3__hilt: u3x_cell(u3t(sut), &p_sut, &q_sut);
+      {
+        return _fuse_in(van, q_sut, ref, bix);
+      }
       case c3__face: u3x_cell(u3t(sut), &p_sut, &q_sut);
       {
         u3_noun vot = _fuse_in(van, q_sut, ref, bix);

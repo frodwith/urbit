@@ -284,6 +284,7 @@
         }
       }
       case c3__help:
+      case c3__hilt:
       case c3__face: {
         if ( (c3n == u3r_trel(sut, 0, &p_sut, &q_sut)) ) {
           return u3m_bail(c3__fail);
@@ -448,6 +449,7 @@
           return hiv;
         }
         case c3__help:
+        case c3__hilt:
         case c3__face: {
           if ( c3n == u3r_trel(ref, 0, &p_ref, &q_ref) ) {
             return u3m_bail(c3__fail);
