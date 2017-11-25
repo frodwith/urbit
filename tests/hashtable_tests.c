@@ -90,22 +90,39 @@ static void
 _test_cache_trimming(void)
 {
   c3_w max_w = 620;
-  c3_w i_w;
+  c3_w i_w, v_w;
 
-  //u3p(u3h_root) har_p = u3h_new_cache(max_w / 2);
-  u3p(u3h_root) har_p = u3h_new_cache(max_w / 10 );
+  u3p(u3h_root) har_p = u3h_new_cache(max_w / 2);
+  //u3p(u3h_root) har_p = u3h_new_cache(max_w / 10 );
   u3h_root*     har_u = u3to(u3h_root, har_p);
+  u3_noun key, val, got;
 
   for ( i_w = 0; i_w < max_w; i_w++ ) {
-    u3h_put(har_p, i_w, i_w + max_w);
+    v_w = i_w + max_w;
+    key = u3nc(i_w, v_w);
+    val = u3nc(i_w, v_w);
+
+    u3h_put(har_p, key, val);
+    u3z(key);
   }
 
-  if ( ( max_w + max_w - 1) != u3h_get(har_p, max_w - 1) ) {
-    fprintf(stderr, "fail\r\n");
+  fprintf(stderr, "added elements.\r\n");
+
+  key = u3nc(max_w - 1, max_w - 1 + max_w);
+  val = u3nc(max_w - 1, max_w - 1 + max_w);  //  expected
+  got = u3h_get(har_p, key);
+
+  if ( u3_none == got ) {
+    fprintf(stderr, "fail u3_none\r\n");
     exit(1);
   }
-  if ( ( max_w / 10 ) != har_u->use_w ) {
-    fprintf(stderr, "fail\r\n");
+
+  if ( c3n == u3r_sing(val, got) ) {
+    fprintf(stderr, "fail unequal\r\n");
+    exit(1);
+  }
+  if ( ( max_w / 2 ) != har_u->use_w ) {
+    fprintf(stderr, "fail use_w == %d\r\n", har_u->use_w);
     exit(1);
   }
   fprintf(stderr, "test_cache_trimming: ok\n");

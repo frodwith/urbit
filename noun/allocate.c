@@ -130,6 +130,22 @@ _box_detach(u3a_box* box_u)
   else {
     c3_w sel_w = _box_slot(box_u->siz_w);
 
+    /*
+    void* fre = u3R->all.fre_p[sel_w];
+    if ( fre_p != fre ) {
+
+      fprintf(stderr,
+          "siz_w %d sel_w %d"
+          "fre_p %p pre_p %p nex_p %p fre %p pre? %s nex? %s\r\n",
+          box_u->siz_w, sel_w,
+          fre_p, fre, pre_p, nex_p,
+          ( pre_p == fre )? "YES" : "NO",
+          ( nex_p == fre )? "YES" : "NO"
+      );
+
+    }
+    */
+
     c3_assert(fre_p == u3R->all.fre_p[sel_w]);
     u3R->all.fre_p[sel_w] = nex_p;
   }
@@ -148,7 +164,7 @@ _box_free(u3a_box* box_u)
     return;
   }
 
-#if 0
+#if 1
   /* Clear the contents of the block, for debugging.
   */
   {
@@ -316,29 +332,37 @@ _me_road_all_cap(c3_w len_w)
 }
 #endif
 
-#if 0
+#if 1
 /* u3a_sane(): check allocator sanity.
 */
 void
 u3a_sane(void)
 {
-  c3_w i_w;
+  c3_w i_w, j_w;
    
   for ( i_w = 0; i_w < u3a_fbox_no; i_w++ ) {
-    u3a_fbox* fre_u = u3R->all.fre_u[i_w];
- 
-    while ( fre_u ) {
-      if ( fre_u == u3R->all.fre_u[i_w] ) {
-        c3_assert(fre_u->pre_u == 0);
+    u3a_fbox* fre_p = u3tn(u3a_fbox, u3R->all.fre_p[i_w]);
+
+    j_w = 0;
+
+    while ( fre_p ) {
+      //  TODO: why does this line report equal on the second iteration?
+      //  if ( fre_p == u3tn(u3a_fbox, u3R->all.fre_p[i_w]) ) {
+      if ( 0 == j_w ) {
+        c3_assert(fre_p->pre_p == 0);
       }
       else {
-        c3_assert(fre_u->pre_u != 0);
-        c3_assert(fre_u->pre_u->nex_u == fre_u);
-        if ( fre_u->nex_u != 0 ) {
-          c3_assert(fre_u->nex_u->pre_u == fre_u);
+        u3a_fbox* pre_p = u3tn(u3a_fbox, fre_p->pre_p);
+        c3_assert(pre_p != 0);
+        c3_assert(u3tn(u3a_fbox, pre_p->nex_p) == fre_p);
+
+        u3a_fbox* nex_p = u3tn(u3a_fbox, fre_p->pre_p);
+        if ( nex_p != 0 ) {
+          c3_assert(u3tn(u3a_fbox, nex_p->pre_p) == fre_p);
         }
       }
-      fre_u = fre_u->nex_u;
+      fre_p = u3tn(u3a_fbox, fre_p->nex_p);
+      j_w++;
     }
   }
 }
@@ -372,6 +396,8 @@ u3a_reclaim(void)
 {
   c3_w old_w;
 
+  //u3a_sane();
+
   if ( (0 == u3R->cax.har_p) ||
        (0 == u3to(u3h_root, u3R->cax.har_p)->use_w) ) 
   {
@@ -380,11 +406,16 @@ u3a_reclaim(void)
   }
   old_w = u3a_open(u3R) + u3R->all.fre_w;
 
-#if 0
+#if 1
   fprintf(stderr, "allocate: reclaim: half of %d entries\r\n", 
                    u3to(u3h_root, u3R->cax.har_p)->use_w);
 
   u3h_trim_to(u3R->cax.har_p, u3to(u3h_root, u3R->cax.har_p)->use_w / 2);
+
+  //u3a_sane();
+
+  u3_term_io_loja(stdout);
+
 #else
   fprintf(stderr, "allocate: reclaim: kill all %d entries\r\n", 
                    u3to(u3h_root, u3R->cax.har_p)->use_w);
@@ -1597,6 +1628,35 @@ u3a_print_memory(c3_c* cap_c, c3_w wor_w)
   }
   u3_term_io_loja(0);
 }
+
+/* u3a_print_free(): print information about free boxes.
+void
+u3a_print_free(void)
+{
+  c3 i_w;
+  fprintf(stderr, "cap %08x hat %08x mat %08x rut %08x\r\n",
+          u3R->cap_p, u3R->hat_p, u3R->mat_p, u3R->rut_p);
+
+  fprintf(stderr, "fre %d max %d, cel %08x\r\n",
+          u3R->all.fre_w, u3R->all.max_w, u3R->all.cel_p);
+
+  fprintf(stderr, "<FREE>\r\n");
+  for ( i_w = 0; i_w < u3a_fbox_no; i_w++ ) {
+    u3p(u3a_fbox)* fox_u = &u3R->all.fre_p[i_w];
+
+    fprintf(stderr, "  <FREE[%d]>\r\n", i_w);
+
+    while ( u3to(u3a_fbox, fox_u) != 0 ) {
+      fprintf(stderr, "    fox_u: %08x\r\n", fox_u); 
+      
+      fox_u = u3of(u3to(u3a_fbox, fox_u)->nex_p);
+    }   
+
+    fprintf(stderr, "  </FREE[%d]>\r\n", i_w);
+  }
+  fprintf(stderr, "</FREE>\r\n");
+}
+*/
 
 /* u3a_sweep(): sweep a fully marked road.
 */

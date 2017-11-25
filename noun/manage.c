@@ -904,7 +904,7 @@ u3m_soft_top(c3_w    sec_w,                     //  timer seconds
         u3a_print_memory("execute: top", u3R->all.max_w);
       }
 #endif
-      u3m_grab(pro, u3_none);
+      //  u3m_grab(pro, u3_none);
     }
  
     /* Revert to external signal regime.

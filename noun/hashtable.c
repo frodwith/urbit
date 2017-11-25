@@ -4,13 +4,46 @@
 #include "all.h"
 
 static void
-_ch_slot_put(u3h_slot* sot_w, u3_noun kev, c3_w lef_w, c3_w rem_w, c3_w* use_w);
+_ch_slot_put(u3h_root*, u3h_slot* sot_w, u3_noun kev, c3_w lef_w, c3_w rem_w, c3_w* use_w);
 
 static c3_o
 _ch_trim_slot(u3h_root* har_u, u3h_slot *sot_w, c3_w lef_w, c3_w rem_w);
 
 c3_w
 _ch_skip_slot(c3_w mug_w, c3_w lef_w);
+
+/*
+typedef struct {
+  u3h_root* har_u;
+  u3h_slot* han_u;
+  c3_w mug_w;
+  c3_w lef_w;
+  c3_w rem_w;
+  c3_w bit_w;
+  c3_w inx_w;
+} u3h_lens;
+
+static u3h_lens
+_ch_down(u3h_lens old_u)
+{
+  u3h_lens new_u;
+  new_u.har_u = old_u.har_u;
+  new_u.mug_w = old_u.mug_w;
+  new_u.lef_w = old_u.lef_w - 5;
+  new_u.bit_w = old_u.rem_w >> new_u.lef_w;
+  new_u.rem_w = old_u.rem_w & ((1 << new_u.lef_w) - 1);
+  new_u.inx_w = old_u.han_u->map_w & ((1 << new_u.bit_w) - 1);
+  new_u.han_u = &old_u.han_u->sot_w[new_u.inx_w];
+  return new_u;
+}
+
+static u3h_lens
+_ch_next(u3h_lens old_u)
+{
+  u3h_lens new_u;
+  return new_u;
+}
+*/
 
 /* u3h_new_cache(): create hashtable with bounded size.
 */
@@ -87,7 +120,7 @@ _ch_some_new(c3_w lef_w)
 /* _ch_node_add(): add to node.
 */
 static u3h_node*
-_ch_node_add(u3h_node* han_u, c3_w lef_w, c3_w rem_w, u3_noun kev, c3_w *use_w)
+_ch_node_add(u3h_root* har_u, u3h_node* han_u, c3_w lef_w, c3_w rem_w, u3_noun kev, c3_w *use_w)
 {
   c3_w bit_w, inx_w, map_w, i_w;
 
@@ -98,7 +131,7 @@ _ch_node_add(u3h_node* han_u, c3_w lef_w, c3_w rem_w, u3_noun kev, c3_w *use_w)
   inx_w = _ch_popcount(map_w & ((1 << bit_w) - 1));
 
   if ( map_w & (1 << bit_w) ) {
-    _ch_slot_put(&(han_u->sot_w[inx_w]), kev, lef_w, rem_w, use_w);
+    _ch_slot_put(har_u, &(han_u->sot_w[inx_w]), kev, lef_w, rem_w, use_w);
     return han_u;
   }
   else {
@@ -168,18 +201,18 @@ _ch_buck_add(u3h_buck* hab_u, u3_noun kev, c3_w *use_w)
 /* _ch_some_add(): add to node or bucket.
 */
 static void*
-_ch_some_add(void* han_v, c3_w lef_w, c3_w rem_w, u3_noun kev, c3_w *use_w)
+_ch_some_add(u3h_root* har_u, void* han_v, c3_w lef_w, c3_w rem_w, u3_noun kev, c3_w *use_w)
 {
   if ( 0 == lef_w ) {
     return _ch_buck_add((u3h_buck*)han_v, kev, use_w);
   }
-  else return _ch_node_add((u3h_node*)han_v, lef_w, rem_w, kev, use_w);
+  else return _ch_node_add(har_u, (u3h_node*)han_v, lef_w, rem_w, kev, use_w);
 }
 
 /* _ch_slot_put(): store a key-value pair in a u3h_slot (root or node) 
 */
 static void
-_ch_slot_put(u3h_slot* sot_w, u3_noun kev, c3_w lef_w, c3_w rem_w, c3_w* use_w)
+_ch_slot_put(u3h_root* har_u, u3h_slot* sot_w, u3_noun kev, c3_w lef_w, c3_w rem_w, c3_w* use_w)
 {
   if ( c3y == u3h_slot_is_null(*sot_w) ) {
     *sot_w = u3h_noun_be_warm(u3h_noun_to_slot(kev));
@@ -195,20 +228,22 @@ _ch_slot_put(u3h_slot* sot_w, u3_noun kev, c3_w lef_w, c3_w rem_w, c3_w* use_w)
       c3_w  rom_w = u3r_mug(u3h(kov)) & ((1 << lef_w) - 1);
       void* hav_v = _ch_some_new(lef_w);
 
-      *use_w -= 1; // take one out, add two
-      hav_v = _ch_some_add(hav_v, lef_w, rom_w, kov, use_w);
-      hav_v = _ch_some_add(hav_v, lef_w, rem_w, kev, use_w);
+      *use_w -= 1;// take one out, add two
+      hav_v = _ch_some_add(har_u, hav_v, lef_w, rom_w, kov, use_w);
+      hav_v = _ch_some_add(har_u, hav_v, lef_w, rem_w, kev, use_w);
       *sot_w = u3h_node_to_slot(hav_v);
     }
   }
   else {
-    void* hav_v = _ch_some_add(u3h_slot_to_node(*sot_w), 
+    c3_assert( c3y == u3h_slot_is_node(*sot_w) );
+
+    void* hav_v = _ch_some_add(har_u, 
+                               u3h_slot_to_node(*sot_w), 
                                lef_w, 
                                rem_w, 
                                kev, 
                                use_w);
 
-    c3_assert( c3y == u3h_slot_is_node(*sot_w) );
     *sot_w = u3h_node_to_slot(hav_v);
   }
 }
@@ -218,10 +253,41 @@ _ch_slot_put(u3h_slot* sot_w, u3_noun kev, c3_w lef_w, c3_w rem_w, c3_w* use_w)
 static c3_o
 _ch_trim_node(u3h_root* har_u, u3h_slot* sot_w, c3_w lef_w, c3_w rem_w)
 {
+  FILE* _uh = u3_term_io_hija();
+
   c3_w bit_w, map_w, inx_w;
   u3h_slot* tos_w;
-  u3h_node* han_u = (u3h_node*) u3h_slot_to_node(*sot_w);
+  u3h_node* han_u;
 
+  han_u = (u3h_node*) u3h_slot_to_node(*sot_w);
+  c3_w mug_w = har_u->arm_u.mug_w;
+
+  c3_c pre_c[128];
+  sprintf(pre_c,
+      "trim_node(mug_w %08x lef_w %02d han_u %08x sot_w %08x) ",
+      mug_w, lef_w, han_u, sot_w);
+
+  if ( c3n == u3h_slot_is_node(*sot_w) ) {
+    fprintf(_uh, "%sERROR not a node\r\n", pre_c);
+    c3_assert(c3y == u3h_slot_is_node(*sot_w));
+  }
+
+  if ( 0 == _ch_popcount(han_u->map_w) ) {
+    fprintf(_uh, "%sERROR empty node\r\n", pre_c);
+    c3_assert(0 < _ch_popcount(han_u->map_w));
+  }
+  if ( (1 == _ch_popcount(han_u->map_w))
+       && (c3y == u3h_slot_is_noun(han_u->sot_w[0])) ) {
+    
+    fprintf(_uh, "%sERROR singleton node\r\n", pre_c);
+    c3_assert(!((1 == _ch_popcount(han_u->map_w))
+                && (c3y == u3h_slot_is_noun(han_u->sot_w[0]))));
+  }
+  if ( 0 == han_u->sot_w[0] ) {
+    fprintf(_uh, "%sERROR dead slot sot_w[0] %08x\r\n", pre_c, han_u-sot_w[0]);
+    c3_assert(0 != han_u->sot_w[0]);
+  }
+ 
   lef_w -= 5;
   bit_w = (rem_w >> lef_w);
   map_w = han_u->map_w;
@@ -236,10 +302,12 @@ _ch_trim_node(u3h_root* har_u, u3h_slot* sot_w, c3_w lef_w, c3_w rem_w)
   tos_w = &(han_u->sot_w[inx_w]);
 
   if ( c3n == _ch_trim_slot(har_u, tos_w, lef_w, rem_w) ) {
+    fprintf(_uh, "%sNO TRIM\r\n", pre_c);
     // nothing trimmed
     return c3n;
   }
-  else if ( 0 != *tos_w  ) {
+  else if ( 0 != *tos_w ) {
+    fprintf(_uh, "%sTRIMMED SUB_NODE\r\n", pre_c);
     // something trimmed, but slot still has value
     return c3y;
   }
@@ -247,32 +315,66 @@ _ch_trim_node(u3h_root* har_u, u3h_slot* sot_w, c3_w lef_w, c3_w rem_w)
     // shrink!
     c3_w i_w, len_w = _ch_popcount(map_w);
 
-    if ( 2 == len_w ) {
+    if ( 1 == len_w ) {
+      fprintf(_uh,
+          "%sZEROED SINGLETON inx_w %d sot_w[0] %08x\r\n",
+          pre_c, inx_w, han_u->sot_w[0], han_u->sot_w[1]);
+
+      *sot_w = han_u->sot_w[0];
+      
+      u3a_wfree(han_u);
+    }
+    else if ( 2 == len_w ) {
+      fprintf(_uh,
+          "%sZEROED DOUBLETON inx_w %d sot_w[0] %08x sot_w[1] %08x\r\n",
+          pre_c, inx_w, han_u->sot_w[0], han_u->sot_w[1]);
+
       // only one left, pick the other
-      *sot_w = han_u->sot_w[ 0 == inx_w ? 1 : 0 ];
+      *sot_w = han_u->sot_w[ ( 0 == inx_w )? 1 : 0 ];
 
       u3a_wfree(han_u);
     }
     else {
       // shrink node in place; don't reallocate, we could be low on memory
       //
+      fprintf(_uh,
+          "%sZEROED SUB_NODE inx_w %d map_w %08x -> %08x\r\n",
+          pre_c, inx_w, han_u->map_w, han_u->map_w & ~(1 << bit_w));
+
+      c3_assert(2 < len_w);
+
       han_u->map_w = han_u->map_w & ~(1 << bit_w);
 
       for ( i_w = inx_w; i_w < (len_w - 1); i_w++ ) {
         han_u->sot_w[i_w] = han_u->sot_w[i_w + 1];
       }
+      //  leave the last entry, since nothing points to it and we're not
+      //  shrinking the box containing this node anyway. We could do:
+      //  han_u->sot_w[len_w - 1] = 0;
     }
     return c3y;
   }
 }
 
-/* _ch_trim_node(): trim one entry from a bucket slot
+/* _ch_trim_buck(): trim one entry from a bucket slot
 */
 static c3_o
 _ch_trim_buck(u3h_root* har_u, u3h_slot* sot_w)
 {
   c3_w i_w, len_w;
-  u3h_buck* hab_u = u3h_slot_to_node(*sot_w);
+  u3h_buck* hab_u;
+
+  FILE* _uh = u3_term_io_hija();
+
+  c3_c pre_c[128];
+  sprintf(pre_c,
+      "trim_buck(mug_w %08x sot_w %08x",
+      har_u->arm_u.mug_w, sot_w);
+
+  fprintf(_uh, "%s\r\n", pre_c);
+
+  c3_assert(c3y == u3h_slot_is_node(*sot_w));
+  hab_u = u3h_slot_to_node(*sot_w);
 
   for ( har_u->arm_u.buc_o = c3y, len_w = hab_u->len_w; 
         har_u->arm_u.inx_w < len_w;
@@ -333,14 +435,43 @@ _ch_skip_slot(c3_w mug_w, c3_w lef_w)
 static c3_o
 _ch_trim_slot(u3h_root* har_u, u3h_slot *sot_w, c3_w lef_w, c3_w rem_w)
 {
+  FILE* _uh = u3_term_io_hija();
+
+  c3_c pre_c[128];
+  sprintf(pre_c,
+      "trim_slot(mug_w %08x lef_w %02d sot_w %08x) ",
+      har_u->arm_u.mug_w, lef_w, sot_w);
+
   if ( _(u3h_slot_is_null(*sot_w)) ) {
+    c3_assert(25 == lef_w);  //  null slots should only exist in the root.
+    fprintf(_uh, "%sSKIPPING NULL use_w %d\r\n",
+                  pre_c, har_u->use_w);
     har_u->arm_u.mug_w = _ch_skip_slot(har_u->arm_u.mug_w, lef_w);
     return c3n;
   }
   else if ( _(u3h_slot_is_node(*sot_w)) ) {
-    return _ch_trim_some(har_u, sot_w, lef_w, rem_w);
+    c3_o res_o;
+    fprintf(_uh, "%sRECURSING\r\n", pre_c);
+
+    res_o = _ch_trim_some(har_u, sot_w, lef_w, rem_w);
+
+    if ( c3y == res_o && _(u3h_slot_is_node(*sot_w)) ) {
+      u3h_node* han_u = (u3h_node*) u3h_slot_to_node(*sot_w);
+
+      //  shrink!
+      if ( (1 == _ch_popcount(han_u->map_w))
+           && (c3y == u3h_slot_is_noun(han_u->sot_w[0])) ) {
+        fprintf(_uh, "%sDOUBLE_SHRINK han_u %08x\r\n", pre_c, han_u);
+
+        *sot_w = han_u->sot_w[0];
+        u3a_wfree(han_u);
+      }
+    }
+    return res_o;
   }
   else if ( _(u3h_slot_is_warm(*sot_w)) ) {
+    fprintf(_uh, "%sCOLDING\r\n", pre_c);
+
     *sot_w = u3h_noun_be_cold(*sot_w);
     if ( c3n == har_u->arm_u.buc_o ) {
       har_u->arm_u.mug_w = (har_u->arm_u.mug_w + 1) & 0x7FFFFFFF; // modulo 2^31
@@ -348,9 +479,13 @@ _ch_trim_slot(u3h_root* har_u, u3h_slot *sot_w, c3_w lef_w, c3_w rem_w)
     return c3n;
   }
   else {
+    c3_assert(c3y == u3h_slot_is_cold(*sot_w));
+
     u3_noun kev = u3h_slot_to_noun(*sot_w);
+
+    fprintf(_uh, "%sZEROING kev %08x\r\n", pre_c, kev);
+
     *sot_w = 0;
-    // uL(fprintf(uH, "trim: freeing %x, use count %d\r\n", kev, u3a_use(kev)));
     u3z(kev);
 
     har_u->arm_u.mug_w = _ch_skip_slot(har_u->arm_u.mug_w, lef_w);
@@ -382,13 +517,6 @@ u3h_trim_to(u3p(u3h_root) har_p, c3_w n_w)
     if ( c3y == _ch_trim_root(har_u) ) {
       har_u->use_w -= 1;
     }
-    /* TODO: remove
-    if ( c3n == har_u->arm_u.buc_o ) {
-      // lower 31 bits of increment (next mug)
-      har_u->arm_u.mug_w = (har_u->arm_u.mug_w + 1) & 0x7FFFFFFF;
-      har_u->arm_u.inx_w = 0;
-    }
-    */
   }
 }
 
@@ -405,7 +533,7 @@ u3h_put(u3p(u3h_root) har_p, u3_noun key, u3_noun val)
   c3_w        inx_w = (mug_w >> 25);  //  6 bits
   c3_w        rem_w = (mug_w & ((1 << 25) - 1));
 
-  _ch_slot_put(&(har_u->sot_w[inx_w]), kev, 25, rem_w, &(har_u->use_w));
+  _ch_slot_put(har_u, &(har_u->sot_w[inx_w]), kev, 25, rem_w, &(har_u->use_w));
   if ( har_u->max_w > 0 ) {
     u3h_trim_to(har_p, har_u->max_w);
   }
