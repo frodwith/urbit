@@ -315,7 +315,7 @@ _ch_trim_node(u3h_root* har_u, u3h_slot* sot_w, c3_w lef_w, c3_w rem_w)
     fprintf(_uh, "%sTRIMMED SUB_NODE\r\n", pre_c);
     
     //  shrink!
-    if ( c3y == u3h_slot_is_noun(*tos_w) && (_ch_popcount(map_w) == 2) ) {
+    if ( c3y == u3h_slot_is_noun(*tos_w) && (_ch_popcount(map_w) == 1) ) {
       fprintf(_uh, "%sSHRANK BECAUSE SUB_NODE\r\n", pre_c);
       *sot_w = *tos_w;
       u3a_wfree(han_u);
@@ -327,11 +327,10 @@ _ch_trim_node(u3h_root* har_u, u3h_slot* sot_w, c3_w lef_w, c3_w rem_w)
     // shrink!
     c3_w i_w, len_w = _ch_popcount(map_w);
 
-    c3_assert(1 != len_w);
+    u3h_slot sur_w;
 
-    u3h_slot sur_w = han_u->sot_w[ ( 0 == inx_w )? 1 : 0 ];
-
-    if ( 2 == len_w && c3y == u3h_slot_is_noun(sur_w) ) {
+    if ( 2 == len_w && c3y == u3h_slot_is_noun(
+          sur_w = han_u->sot_w[ ( 0 == inx_w )? 1 : 0 ]) ) {
       fprintf(_uh,
           "%sSHRANK DOUBLETON inx_w %d sot_w[0] %08x sot_w[1] %08x\r\n",
           pre_c, inx_w, han_u->sot_w[0], han_u->sot_w[1]);
