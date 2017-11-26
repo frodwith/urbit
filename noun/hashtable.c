@@ -225,7 +225,6 @@ _ch_trim_node(u3h_root* har_u, u3h_slot* sot_w, c3_w lef_w, c3_w rem_w)
   u3h_node* han_u;
 
   han_u = (u3h_node*) u3h_slot_to_node(*sot_w);
-  c3_w mug_w = har_u->arm_u.mug_w;
 
   c3_assert(c3y == u3h_slot_is_node(*sot_w));
   c3_assert(0 < _ch_popcount(han_u->map_w));
@@ -426,8 +425,6 @@ void
 u3h_trim_to(u3p(u3h_root) har_p, c3_w n_w)
 {
   u3h_root* har_u = u3to(u3h_root, har_p);
-  c3_w i_w;
-  c3_o ful_w;
 
   while ( har_u->use_w > n_w ) {
     if ( c3y == _ch_trim_root(har_u) ) {

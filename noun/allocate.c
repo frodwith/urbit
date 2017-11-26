@@ -394,8 +394,6 @@ u3a_reflux(void)
 void
 u3a_reclaim(void)
 {
-  c3_w old_w;
-
   u3a_sane();
 
   if ( (0 == u3R->cax.har_p) ||
@@ -412,8 +410,6 @@ u3a_reclaim(void)
   u3h_trim_to(u3R->cax.har_p, u3to(u3h_root, u3R->cax.har_p)->use_w / 2);
 
   u3a_sane();
-
-  u3_term_io_loja(stdout);
 }
 
 /* _ca_willoc(): u3a_walloc() internals.
