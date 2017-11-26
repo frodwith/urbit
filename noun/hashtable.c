@@ -292,9 +292,13 @@ _ch_trim_node(u3h_root* har_u, u3h_slot* sot_w, c3_w lef_w, c3_w rem_w)
   bit_w = (rem_w >> lef_w);
   map_w = han_u->map_w;
 
-  if ( 0 == (map_w & (1 << bit_w)) ) {
+  while ( 0 == (map_w & (1 << bit_w)) ) {
+    bit_w++;
     har_u->arm_u.mug_w = _ch_skip_slot(har_u->arm_u.mug_w, lef_w);
-    return c3n;
+    
+    if ( bit_w > 31 ) {
+      return c3n;
+    }
   }
 
   rem_w = (rem_w & ((1 << lef_w) - 1));
@@ -432,58 +436,6 @@ _ch_skip_slot(c3_w mug_w, c3_w lef_w)
 }
 
 /* _ch_trim_slot(): trim one entry from a slot
-static c3_o
-_ch_trim_slot(u3h_root* har_u, u3h_slot *sot_w, c3_w lef_w, c3_w rem_w)
-{
-  FILE* _uh = u3_term_io_hija();
-
-  c3_c pre_c[128];
-  sprintf(pre_c,
-      "trim_slot(mug_w %08x lef_w %02d sot_w %08x) ",
-      har_u->arm_u.mug_w, lef_w, sot_w);
-
-  if ( _(u3h_slot_is_null(*sot_w)) ) {
-    c3_assert(25 == lef_w);  //  null slots should only exist in the root.
-    fprintf(_uh, "%sSKIPPING NULL use_w %d\r\n",
-                  pre_c, har_u->use_w);
-    har_u->arm_u.mug_w = _ch_skip_slot(har_u->arm_u.mug_w, lef_w);
-    return c3n;
-  }
-  else if ( _(u3h_slot_is_node(*sot_w)) ) {
-    fprintf(_uh, "%sRECURSING\r\n", pre_c);
-    return _ch_trim_some(har_u, sot_w, lef_w, rem_w);
-  }
-  else {
-    // this is a key-value pair
-    u3_noun kev = u3h_slot_to_noun(*sot_w);
-    c3_w hav_w = u3r_mug(u3h(kev)),
-         luk_w = har_u->arm_u.mug_w;
-
-    if ( luk_w < hav_w ) {
-      har_u->arm_u.mug_w = hav_w;
-      return c3n;
-    }
-    if ( luk_w > hav_w ) {
-      har_u->arm_u.mug_w = _ch_skip_slot(har_u->arm_u.mug_w, lef_w);
-      return c3n;
-    }
-    else if ( _(u3h_slot_is_warm(*sot_w)) ) {
-      fprintf(_uh, "%sCOLDING\r\n", pre_c);
-
-      *sot_w = u3h_noun_be_cold(*sot_w);
-      if ( c3n == har_u->arm_u.buc_o ) {
-        har_u->arm_u.mug_w = (har_u->arm_u.mug_w + 1) & 0x7FFFFFFF; // modulo 2^31
-      }
-      return c3n;
-    }
-    else {
-      fprintf(_uh, "%sZEROING kev %08x\r\n", pre_c, kev);
-      
-    }
-} 
-*/
-
-/* _ch_trim_slot(): trim one entry from a slot
 */
 static c3_o
 _ch_trim_slot(u3h_root* har_u, u3h_slot *sot_w, c3_w lef_w, c3_w rem_w)
@@ -507,23 +459,6 @@ _ch_trim_slot(u3h_root* har_u, u3h_slot *sot_w, c3_w lef_w, c3_w rem_w)
     fprintf(_uh, "%sRECURSING\r\n", pre_c);
  
     return _ch_trim_some(har_u, sot_w, lef_w, rem_w);
- 
-    /*
-    if ( c3y == res_o && _(u3h_slot_is_node(*sot_w)) ) {
-      // bucket?
-      u3h_node* han_u = (u3h_node*) u3h_slot_to_node(*sot_w);
- 
-      //  shrink!
-      if ( (1 == _ch_popcount(han_u->map_w))
-           && (c3y == u3h_slot_is_noun(han_u->sot_w[0])) ) {
-        fprintf(_uh, "%sDOUBLE_SHRINK han_u %08x\r\n", pre_c, han_u);
- 
-        *sot_w = han_u->sot_w[0];
-        u3a_wfree(han_u);
-      }
-    }
-    return res_o;
-    */
   }
   else {
     // this is a key-value pair
