@@ -311,7 +311,7 @@ _ch_trim_node(u3h_root* har_u, u3h_slot* sot_w, c3_w lef_w, c3_w rem_w)
     fprintf(_uh, "%sTRIMMED SUB_NODE\r\n", pre_c);
     
     //  shrink!
-    if ( c3y == u3h_slot_is_noun(*tos_w) ) {
+    if ( c3y == u3h_slot_is_noun(*tos_w) && (map_w == 2) ) {
       fprintf(_uh, "%sSHRANK BECAUSE SUB_NODE\r\n", pre_c);
       *sot_w = *tos_w;
       u3a_wfree(han_u);
