@@ -347,8 +347,6 @@ _ch_trim_node(u3h_root* har_u, u3h_slot* sot_w, c3_w lef_w, c3_w rem_w)
           "%sZEROED SUB_NODE inx_w %d map_w %08x -> %08x\r\n",
           pre_c, inx_w, han_u->map_w, han_u->map_w & ~(1 << bit_w));
 
-      c3_assert(2 < len_w);
-
       han_u->map_w = han_u->map_w & ~(1 << bit_w);
 
       for ( i_w = inx_w; i_w < (len_w - 1); i_w++ ) {
