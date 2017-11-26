@@ -356,7 +356,7 @@ u3a_sane(void)
         c3_assert(pre_p != 0);
         c3_assert(u3tn(u3a_fbox, pre_p->nex_p) == fre_p);
 
-        u3a_fbox* nex_p = u3tn(u3a_fbox, fre_p->pre_p);
+        u3a_fbox* nex_p = u3tn(u3a_fbox, fre_p->nex_p);
         if ( nex_p != 0 ) {
           c3_assert(u3tn(u3a_fbox, nex_p->pre_p) == fre_p);
         }
@@ -396,7 +396,7 @@ u3a_reclaim(void)
 {
   c3_w old_w;
 
-  //u3a_sane();
+  u3a_sane();
 
   if ( (0 == u3R->cax.har_p) ||
        (0 == u3to(u3h_root, u3R->cax.har_p)->use_w) ) 
@@ -412,7 +412,7 @@ u3a_reclaim(void)
 
   u3h_trim_to(u3R->cax.har_p, u3to(u3h_root, u3R->cax.har_p)->use_w / 2);
 
-  //u3a_sane();
+  u3a_sane();
 
   u3_term_io_loja(stdout);
 
@@ -420,10 +420,13 @@ u3a_reclaim(void)
   fprintf(stderr, "allocate: reclaim: kill all %d entries\r\n", 
                    u3to(u3h_root, u3R->cax.har_p)->use_w);
 
+  u3a_sane();
   /*  brutal and guaranteed effective
   */
   u3h_free(u3R->cax.har_p);
   u3R->cax.har_p = u3h_new();
+
+  u3a_sane();
 #endif
 }
 
