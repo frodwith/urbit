@@ -329,14 +329,15 @@ _ch_trim_node(u3h_root* har_u, u3h_slot* sot_w, c3_w lef_w, c3_w rem_w)
 
     c3_assert(1 != len_w);
 
-    if ( 2 == len_w ) {
+    u3h_slot sur_w = han_u->sot_w[ ( 0 == inx_w )? 1 : 0 ];
+
+    if ( 2 == len_w && c3y == u3h_slot_is_noun(sur_w) ) {
       fprintf(_uh,
           "%sSHRANK DOUBLETON inx_w %d sot_w[0] %08x sot_w[1] %08x\r\n",
           pre_c, inx_w, han_u->sot_w[0], han_u->sot_w[1]);
 
-      // only one left, pick the other
-      *sot_w = han_u->sot_w[ ( 0 == inx_w )? 1 : 0 ];
-
+      // raise key-value pair into self
+      *sot_w = sur_w;
       u3a_wfree(han_u);
     }
     else {
