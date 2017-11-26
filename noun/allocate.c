@@ -406,7 +406,6 @@ u3a_reclaim(void)
   }
   old_w = u3a_open(u3R) + u3R->all.fre_w;
 
-#if 1
   fprintf(stderr, "allocate: reclaim: half of %d entries\r\n", 
                    u3to(u3h_root, u3R->cax.har_p)->use_w);
 
@@ -415,19 +414,6 @@ u3a_reclaim(void)
   u3a_sane();
 
   u3_term_io_loja(stdout);
-
-#else
-  fprintf(stderr, "allocate: reclaim: kill all %d entries\r\n", 
-                   u3to(u3h_root, u3R->cax.har_p)->use_w);
-
-  u3a_sane();
-  /*  brutal and guaranteed effective
-  */
-  u3h_free(u3R->cax.har_p);
-  u3R->cax.har_p = u3h_new();
-
-  u3a_sane();
-#endif
 }
 
 /* _ca_willoc(): u3a_walloc() internals.
@@ -1631,35 +1617,6 @@ u3a_print_memory(c3_c* cap_c, c3_w wor_w)
   }
   u3_term_io_loja(0);
 }
-
-/* u3a_print_free(): print information about free boxes.
-void
-u3a_print_free(void)
-{
-  c3 i_w;
-  fprintf(stderr, "cap %08x hat %08x mat %08x rut %08x\r\n",
-          u3R->cap_p, u3R->hat_p, u3R->mat_p, u3R->rut_p);
-
-  fprintf(stderr, "fre %d max %d, cel %08x\r\n",
-          u3R->all.fre_w, u3R->all.max_w, u3R->all.cel_p);
-
-  fprintf(stderr, "<FREE>\r\n");
-  for ( i_w = 0; i_w < u3a_fbox_no; i_w++ ) {
-    u3p(u3a_fbox)* fox_u = &u3R->all.fre_p[i_w];
-
-    fprintf(stderr, "  <FREE[%d]>\r\n", i_w);
-
-    while ( u3to(u3a_fbox, fox_u) != 0 ) {
-      fprintf(stderr, "    fox_u: %08x\r\n", fox_u); 
-      
-      fox_u = u3of(u3to(u3a_fbox, fox_u)->nex_p);
-    }   
-
-    fprintf(stderr, "  </FREE[%d]>\r\n", i_w);
-  }
-  fprintf(stderr, "</FREE>\r\n");
-}
-*/
 
 /* u3a_sweep(): sweep a fully marked road.
 */
