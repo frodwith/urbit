@@ -3,6 +3,8 @@
 */
 #include "all.h"
 
+c3_o RECLAIMING = c3n;
+
 static void
 _ch_slot_put(u3h_root*, u3h_slot* sot_w, u3_noun kev, c3_w lef_w, c3_w rem_w, c3_w* use_w);
 
@@ -194,24 +196,33 @@ _ch_slot_put(u3h_root* har_u, u3h_slot* sot_w, u3_noun kev, c3_w lef_w, c3_w rem
     else {
       c3_w  rom_w = u3r_mug(u3h(kov)) & ((1 << lef_w) - 1);
       void* hav_v = _ch_some_new(lef_w);
+      void* hav_2, *hav_3;
 
       *use_w -= 1;// take one out, add two
-      hav_v = _ch_some_add(har_u, hav_v, lef_w, rom_w, kov, use_w);
-      hav_v = _ch_some_add(har_u, hav_v, lef_w, rem_w, kev, use_w);
-      *sot_w = u3h_node_to_slot(hav_v);
+      hav_2 = _ch_some_add(har_u, hav_v, lef_w, rom_w, kov, use_w);
+      hav_3 = _ch_some_add(har_u, hav_2, lef_w, rem_w, kev, use_w);
+      *sot_w = u3h_node_to_slot(hav_3);
+
+      if ( c3y == RECLAIMING ) {
+        fprintf(stderr,
+          "slot_put kev->node lef_w %02d hav_1 %08x hav_2 %08x hav_3 %08x\r\n",
+          lef_w, hav_v, hav_2, hav_3);
+      }
     }
   }
   else {
+    void* old_v, *hav_v;
     c3_assert( c3y == u3h_slot_is_node(*sot_w) );
 
-    void* hav_v = _ch_some_add(har_u, 
-                               u3h_slot_to_node(*sot_w), 
-                               lef_w, 
-                               rem_w, 
-                               kev, 
-                               use_w);
-
+    old_v = u3h_slot_to_node(*sot_w);
+    hav_v = _ch_some_add(har_u, old_v, lef_w, rem_w, kev, use_w);
     *sot_w = u3h_node_to_slot(hav_v);
+
+    if ( c3y == RECLAIMING ) {
+      fprintf(stderr,
+        "slot_put node->node lef_w %02d old_v %08x hav_v %08x\r\n",
+        lef_w, old_v, hav_v);
+    }
   }
 }
 
@@ -259,6 +270,9 @@ _ch_trim_node(u3h_root* har_u, u3h_slot* sot_w, c3_w lef_w, c3_w rem_w)
     //  shrink!
     if ( c3y == u3h_slot_is_noun(*tos_w) && (_ch_popcount(map_w) == 1) ) {
       *sot_w = *tos_w;
+      fprintf(stderr,
+          "FREE %08x lef_w %02d raising key-value pair from sub-slot\r\n",
+          han_u, lef_w);
       u3a_wfree(han_u);
     }
 
@@ -275,6 +289,9 @@ _ch_trim_node(u3h_root* har_u, u3h_slot* sot_w, c3_w lef_w, c3_w rem_w)
 
       // raise key-value pair into self
       *sot_w = sur_w;
+      fprintf(stderr,
+          "FREE %08x lef_w %02d raising key-value pair from doubleton\r\n",
+          han_u, lef_w);
       u3a_wfree(han_u);
     }
     else {

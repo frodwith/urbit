@@ -3,6 +3,8 @@
 */
 #include "all.h"
 
+extern c3_o RECLAIMING;
+
 /* _box_count(): adjust memory count.
 */
 #ifdef  U3_CPU_DEBUG
@@ -332,7 +334,7 @@ _me_road_all_cap(c3_w len_w)
 }
 #endif
 
-#if 0
+#if 1
 /* u3a_sane(): check allocator sanity.
 */
 void
@@ -394,7 +396,9 @@ u3a_reflux(void)
 void
 u3a_reclaim(void)
 {
-  //  u3a_sane();
+  RECLAIMING = c3y;
+
+  u3a_sane();
 
   if ( (0 == u3R->cax.har_p) ||
        (0 == u3to(u3h_root, u3R->cax.har_p)->use_w) ) 
@@ -408,7 +412,7 @@ u3a_reclaim(void)
 
   u3h_trim_to(u3R->cax.har_p, u3to(u3h_root, u3R->cax.har_p)->use_w / 2);
 
-  //  u3a_sane();
+  u3a_sane();
 }
 
 /* _ca_willoc(): u3a_walloc() internals.
