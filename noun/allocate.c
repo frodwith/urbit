@@ -402,7 +402,6 @@ u3a_reclaim(void)
     fprintf(stderr, "allocate: reclaim: memo cache: empty\r\n");
     u3m_bail(c3__meme);
   }
-  old_w = u3a_open(u3R) + u3R->all.fre_w;
 
   fprintf(stderr, "allocate: reclaim: half of %d entries\r\n", 
                    u3to(u3h_root, u3R->cax.har_p)->use_w);
