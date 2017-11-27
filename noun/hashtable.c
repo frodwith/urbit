@@ -281,10 +281,16 @@ _ch_trim_node(u3h_root* har_u, u3h_slot* sot_w, c3_w lef_w, c3_w rem_w)
   else {
     // shrink!
     c3_w i_w, len_w = _ch_popcount(map_w);
-
     u3h_slot sur_w;
 
-    if ( 2 == len_w && c3y == u3h_slot_is_noun(
+    if ( 1 == len_w ) {
+      fprintf(stderr,
+          "FREE %08x lef_w %02d trimmed to null slot from singleton\r\n",
+          han_u, lef_w);
+      *sot_w = 0;
+      u3a_wfree(han_u);
+    }
+    else if ( 2 == len_w && c3y == u3h_slot_is_noun(
           sur_w = han_u->sot_w[ ( 0 == inx_w )? 1 : 0 ]) ) {
 
       // raise key-value pair into self
