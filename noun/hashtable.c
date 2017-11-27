@@ -498,8 +498,7 @@ u3h_put(u3p(u3h_root) har_p, u3_noun key, u3_noun val)
 static c3_o
 _ch_buck_hum(u3h_buck* hab_u, c3_w mug_w)
 {
-  c3_w i_w;
-
+  c3_w i_w; 
   for ( i_w = 0; i_w < hab_u->len_w; i_w++ ) {
     if ( mug_w == u3r_mug(u3h(u3h_slot_to_noun(hab_u->sot_w[i_w]))) ) {
       return c3y;
@@ -920,7 +919,7 @@ _ch_node_sane(u3h_node* han_u, c3_w lef_w)
 
   lef_w -= 5;
 
-  c3_assert(len_w > 0);
+  c3_assert(0 < len_w);
   c3_assert(1 == (u3a_botox(han_u))->use_w);
 
   if ( 1 == len_w ) {
@@ -951,16 +950,31 @@ _ch_node_sane(u3h_node* han_u, c3_w lef_w)
 /* _ch_buck_sane(): check bucket integrity.
 */
 void
-_ch_buck_sane(u3h_buck* hab_u, c3_w lef_w)
+_ch_buck_sane(u3h_buck* hab_u)
 {
-  //  XX fill in.
+  c3_w i_w, mug_w, gum_w;
+
+  c3_assert(0 < hab_u->len_w);
+  c3_assert(1 == (u3a_botox(hab_u))->use_w);
+
+  for ( i_w = 0; i_w < hab_u->len_w; i_w++ ) {
+    u3h_slot sot_w = hab_u->sot_w[i_w];
+
+    c3_assert(c3y == u3h_slot_is_noun(sot_w));
+
+    gum_w = u3r_mug(u3h(u3h_slot_to_noun(sot_w)));
+    if ( 0 == i_w ) {
+      mug_w = gum_w;
+    }
+    c3_assert(gum_w == mug_w);
+  }
 }
 
 void
 _ch_some_sane(void* han_v, c3_w lef_w)
 {
   if ( 0 == lef_w ) {
-    _ch_buck_sane((u3h_buck*)han_v, lef_w);
+    _ch_buck_sane((u3h_buck*)han_v);
   }
   else _ch_node_sane((u3h_node*)han_v, lef_w);
 }
