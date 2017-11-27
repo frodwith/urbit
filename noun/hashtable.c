@@ -283,14 +283,17 @@ _ch_trim_node(u3h_root* har_u, u3h_slot* sot_w, c3_w lef_w, c3_w rem_w)
     c3_w i_w, len_w = _ch_popcount(map_w);
     u3h_slot sur_w;
 
-    if ( 1 == len_w ) {
-      fprintf(stderr,
-          "FREE %08x lef_w %02d trimmed to null slot from singleton\r\n",
-          han_u, lef_w);
-      *sot_w = 0;
-      u3a_wfree(han_u);
-    }
-    else if ( 2 == len_w && c3y == u3h_slot_is_noun(
+    //  if we only contained a single item, then that item must be a node.
+    //  if a node contains only key-value pairs (not another node or bucket),
+    //  then it must contain at least two of them. that means if after running
+    //  _ch_trim_slot(), tos_w got zeroed out, then that should only have
+    //  happened if that wasn't our only slot. if it *was* our only slot and
+    //  it got zeroed out, then it must have contained only one key-value
+    //  pair. therefore, we should never reach this case if we started with
+    //  only one slot.
+    c3_assert(1 != len_w);
+
+    if ( 2 == len_w && c3y == u3h_slot_is_noun(
           sur_w = han_u->sot_w[ ( 0 == inx_w )? 1 : 0 ]) ) {
 
       // raise key-value pair into self
