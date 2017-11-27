@@ -457,6 +457,10 @@ u3h_trim_to(u3p(u3h_root) har_p, c3_w n_w)
       har_u->use_w -= 1;
     }
   }
+
+#if 1
+  u3h_sane(har_p);
+#endif
 }
 
 /* u3h_put(): insert in hashtable.
@@ -900,6 +904,87 @@ u3h_walk(u3p(u3h_root) har_p, void (*fun_f)(u3_noun))
   }
 }
 
+/* _ch_node_sane(): check node integrity.
+*/
+void
+_ch_node_sane(u3h_node* han_u, c3_w lef_w)
+{
+  c3_w len_w = _ch_popcount(han_u->map_w);
+  u3h_slot sot_w;
+
+  lef_w -= 5;
+
+  c3_assert(len_w > 0);
+
+  if ( 1 == len_w ) {
+    sot_w = han_u->sot_w[0];
+    c3_assert(_(u3h_slot_is_node(sot_w)));
+    _ch_some_sane(u3h_slot_to_node(sot_w), lef_w);
+  }
+  else {
+    c3_w i_w;
+
+    for ( i_w = 0; i_w < len_w; i_w++ ) {
+      sot_w = han_u->sot_w[i_w];
+      c3_assert(c3n == u3h_slot_is_null(sot_w));
+
+      if ( _(u3h_slot_is_noun(sot_w)) ) {
+        continue;
+      }
+      else if ( _(u3h_slot_is_node(sot_w)) ) {
+        _ch_some_sane(u3h_slot_to_node(sot_w), lef_w);
+      }
+      else {
+        c3_assert(0);  //  unknown contents
+      }
+    }
+  }
+}
+
+/* _ch_buck_sane(): check bucket integrity.
+*/
+void
+_ch_buck_sane(u3h_buck* hab_u, c3_w lef_w)
+{
+  //  XX fill in.
+}
+
+void
+_ch_some_sane(void* han_v, c3_w lef_w)
+{
+  if ( 0 == lef_w ) {
+    _ch_buck_sane((u3h_buck*)han_v, lef_w);
+  }
+  else _ch_node_sane((u3h_node*)han_v, lef_w);
+}
+
+/* u3h_sane(): check hashtable integrity.
+*/
+void
+u3h_sane(u3p(u3h_root) har_p)
+{
+  c3_w i_w;
+  u3h_root* har_u = u3to(u3h_root, har_p);
+  u3h_slot sot_w;
+
+  for ( i_w = 0; i_w < 64; i_w++ ) {
+    sot_w = har_u->sot_w[i_w];
+    if ( _(u3h_slot_is_null(sot_w)) ) {
+      continue;
+    }
+    else if ( _(u3h_slot_is_noun(sot_w)) ) {
+      continue;
+    }
+    else if ( _(u3h_slot_is_node(sot_w)) ) {
+      u3h_node* han_u = u3h_slot_to_node(sot_w);
+
+      _ch_node_sane(han_u, 25);
+    }
+    else {
+      c3_assert(0);  //  unknown contents
+    }
+  }
+}
 
 /* _ch_mark_buck(): mark bucket for gc.
 */
