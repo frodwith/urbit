@@ -480,6 +480,12 @@ u3h_put(u3p(u3h_root) har_p, u3_noun key, u3_noun val)
 
   _ch_slot_put(har_u, &(har_u->sot_w[inx_w]), kev, 25, rem_w, &(har_u->use_w));
 
+  if ( c3y == RECLAIMING ) {
+    if ( _(u3h_slot_is_node(har_u->sot_w[inx_w])) ) {
+      _ch_node_sane(u3h_slot_to_node(har_u->sot_w[inx_w]), 25);
+    }
+  }
+
   c3_assert((har_u->use_w == use_w) || (har_u->use_w == use_w + 1));
 
   if ( har_u->max_w > 0 ) {
