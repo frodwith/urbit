@@ -921,6 +921,7 @@ _ch_node_sane(u3h_node* han_u, c3_w lef_w)
   lef_w -= 5;
 
   c3_assert(len_w > 0);
+  c3_assert(1 == (u3a_botox(han_u))->use_w);
 
   if ( 1 == len_w ) {
     sot_w = han_u->sot_w[0];
