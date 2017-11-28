@@ -43,6 +43,7 @@
         typedef struct {
           c3_w     max_w;     // number of cache lines (0 for no trimming)
           c3_w     use_w;     // number of lines currently filled
+          c3_w     lok_w;     // 0-63 locked slot index, 64 unlocked
           struct {
             c3_w  mug_w;      // current hash
             c3_w  inx_w;      // index into current hash bucket iff buc_o

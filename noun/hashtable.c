@@ -25,6 +25,7 @@ u3h_new_cache(c3_w max_w)
 
   har_u->max_w       = max_w;
   har_u->use_w       = 0;
+  har_u->lok_w       = 64;
   har_u->arm_u.mug_w = 0;
   har_u->arm_u.inx_w = 0;
   har_u->arm_u.buc_o = c3n;
@@ -194,13 +195,16 @@ _ch_slot_put(u3h_root* har_u, u3h_slot* sot_w, u3_noun kev, c3_w lef_w, c3_w rem
       u3z(kov);
     }
     else {
+      // TODO: custom collision create
       c3_w  rom_w = u3r_mug(u3h(kov)) & ((1 << lef_w) - 1);
       void* hav_v = _ch_some_new(lef_w);
       void* hav_2, *hav_3;
+      c3_w sub_w = 0;
 
-      *use_w -= 1;// take one out, add two
-      hav_2 = _ch_some_add(har_u, hav_v, lef_w, rom_w, kov, use_w);
-      hav_3 = _ch_some_add(har_u, hav_2, lef_w, rem_w, kev, use_w);
+      hav_2 = _ch_some_add(har_u, hav_v, lef_w, rom_w, kov, &sub_w);
+      hav_3 = _ch_some_add(har_u, hav_2, lef_w, rem_w, kev, &sub_w);
+      c3_assert(2 == sub_w);
+      *use_w += 1;
       *sot_w = u3h_node_to_slot(hav_3);
 
       if ( c3y == RECLAIMING ) {
@@ -439,10 +443,120 @@ _ch_trim_root(u3h_root* har_u)
 {
   c3_w      mug_w = har_u->arm_u.mug_w;
   c3_w      inx_w = mug_w >> 25; // 6 bits
+  if ( har_u->lok_w == inx_w ) {
+    // locked (mid-put)
+    har_u->arm_u.mug_w = _ch_skip_slot(har_u->arm_u.mug_w, 25);
+    return c3n;
+  }
   c3_w      rem_w = mug_w & ((1 << 25) - 1);
   u3h_slot* sot_w = &(har_u->sot_w[inx_w]);
   
   return _ch_trim_slot(har_u, sot_w, 25, rem_w);
+}
+
+void _ch_some_sane(void* han_v, c3_w lef_w, c3_w* vis_w);
+
+/* _ch_node_sane(): check node integrity.
+*/
+void
+_ch_node_sane(u3h_node* han_u, c3_w lef_w, c3_w* vis_w)
+{
+  c3_w len_w = _ch_popcount(han_u->map_w);
+  u3h_slot sot_w;
+
+  lef_w -= 5;
+
+  c3_assert(0 < len_w);
+  c3_assert(1 == (u3a_botox(han_u))->use_w);
+
+  if ( 1 == len_w ) {
+    sot_w = han_u->sot_w[0];
+    c3_assert(_(u3h_slot_is_node(sot_w)));
+    _ch_some_sane(u3h_slot_to_node(sot_w), lef_w, vis_w);
+  }
+  else {
+    c3_w i_w;
+
+    for ( i_w = 0; i_w < len_w; i_w++ ) {
+      sot_w = han_u->sot_w[i_w];
+      c3_assert(c3n == u3h_slot_is_null(sot_w));
+
+      if ( _(u3h_slot_is_noun(sot_w)) ) {
+        *vis_w += 1;
+        continue;
+      }
+      else if ( _(u3h_slot_is_node(sot_w)) ) {
+        _ch_some_sane(u3h_slot_to_node(sot_w), lef_w, vis_w);
+      }
+      else {
+        c3_assert(0);  //  unknown contents
+      }
+    }
+  }
+}
+
+/* _ch_buck_sane(): check bucket integrity.
+*/
+void
+_ch_buck_sane(u3h_buck* hab_u, c3_w* vis_w)
+{
+  c3_w i_w, mug_w, gum_w;
+
+  c3_assert(0 < hab_u->len_w);
+  c3_assert(1 == (u3a_botox(hab_u))->use_w);
+
+  for ( i_w = 0; i_w < hab_u->len_w; i_w++ ) {
+    u3h_slot sot_w = hab_u->sot_w[i_w];
+
+    c3_assert(c3y == u3h_slot_is_noun(sot_w));
+    *vis_w += 1;
+
+    gum_w = u3r_mug(u3h(u3h_slot_to_noun(sot_w)));
+    if ( 0 == i_w ) {
+      mug_w = gum_w;
+    }
+    c3_assert(gum_w == mug_w);
+  }
+}
+
+void
+_ch_some_sane(void* han_v, c3_w lef_w, c3_w* vis_w)
+{
+  if ( 0 == lef_w ) {
+    _ch_buck_sane((u3h_buck*)han_v, vis_w);
+  }
+  else _ch_node_sane((u3h_node*)han_v, lef_w, vis_w);
+}
+
+/* u3h_sane(): check hashtable integrity.
+*/
+void
+u3h_sane(u3p(u3h_root) har_p)
+{
+  c3_w i_w;
+  u3h_root* har_u = u3to(u3h_root, har_p);
+  u3h_slot sot_w;
+  c3_w vis_w = 0;
+
+  for ( i_w = 0; i_w < 64; i_w++ ) {
+    sot_w = har_u->sot_w[i_w];
+    if ( _(u3h_slot_is_null(sot_w)) ) {
+      continue;
+    }
+    else if ( _(u3h_slot_is_noun(sot_w)) ) {
+      ++vis_w;
+      continue;
+    }
+    else if ( _(u3h_slot_is_node(sot_w)) ) {
+      u3h_node* han_u = u3h_slot_to_node(sot_w);
+
+      _ch_node_sane(han_u, 25, &vis_w);
+    }
+    else {
+      c3_assert(0);  //  unknown contents
+    }
+  }
+  c3_assert( vis_w == har_u->use_w );
 }
 
 /* u3h_trim_to(): trim to n key-value pairs
@@ -478,15 +592,20 @@ u3h_put(u3p(u3h_root) har_p, u3_noun key, u3_noun val)
 
   c3_w use_w = har_u->use_w;
 
+  // not thread safe! use a real lock if we ever get proper multithreading
+  har_u->lok_w = inx_w;
   _ch_slot_put(har_u, &(har_u->sot_w[inx_w]), kev, 25, rem_w, &(har_u->use_w));
+  har_u->lok_w = 64;
 
   if ( c3y == RECLAIMING ) {
+    /*
     if ( _(u3h_slot_is_node(har_u->sot_w[inx_w])) ) {
-      _ch_node_sane(u3h_slot_to_node(har_u->sot_w[inx_w]), 25);
+      c3_w nul_w;
+      _ch_node_sane(u3h_slot_to_node(har_u->sot_w[inx_w]), 25, &nul_w);
     }
+    */
+    u3h_sane(har_p);
   }
-
-  c3_assert((har_u->use_w == use_w) || (har_u->use_w == use_w + 1));
 
   if ( har_u->max_w > 0 ) {
     u3h_trim_to(har_p, har_u->max_w);
@@ -905,104 +1024,6 @@ u3h_walk(u3p(u3h_root) har_p, void (*fun_f)(u3_noun))
       u3h_node* han_u = u3h_slot_to_node(sot_w);
 
       _ch_walk_node(han_u, 25, fun_f);
-    }
-  }
-}
-
-/* _ch_node_sane(): check node integrity.
-*/
-void
-_ch_node_sane(u3h_node* han_u, c3_w lef_w)
-{
-  c3_w len_w = _ch_popcount(han_u->map_w);
-  u3h_slot sot_w;
-
-  lef_w -= 5;
-
-  c3_assert(0 < len_w);
-  c3_assert(1 == (u3a_botox(han_u))->use_w);
-
-  if ( 1 == len_w ) {
-    sot_w = han_u->sot_w[0];
-    c3_assert(_(u3h_slot_is_node(sot_w)));
-    _ch_some_sane(u3h_slot_to_node(sot_w), lef_w);
-  }
-  else {
-    c3_w i_w;
-
-    for ( i_w = 0; i_w < len_w; i_w++ ) {
-      sot_w = han_u->sot_w[i_w];
-      c3_assert(c3n == u3h_slot_is_null(sot_w));
-
-      if ( _(u3h_slot_is_noun(sot_w)) ) {
-        continue;
-      }
-      else if ( _(u3h_slot_is_node(sot_w)) ) {
-        _ch_some_sane(u3h_slot_to_node(sot_w), lef_w);
-      }
-      else {
-        c3_assert(0);  //  unknown contents
-      }
-    }
-  }
-}
-
-/* _ch_buck_sane(): check bucket integrity.
-*/
-void
-_ch_buck_sane(u3h_buck* hab_u)
-{
-  c3_w i_w, mug_w, gum_w;
-
-  c3_assert(0 < hab_u->len_w);
-  c3_assert(1 == (u3a_botox(hab_u))->use_w);
-
-  for ( i_w = 0; i_w < hab_u->len_w; i_w++ ) {
-    u3h_slot sot_w = hab_u->sot_w[i_w];
-
-    c3_assert(c3y == u3h_slot_is_noun(sot_w));
-
-    gum_w = u3r_mug(u3h(u3h_slot_to_noun(sot_w)));
-    if ( 0 == i_w ) {
-      mug_w = gum_w;
-    }
-    c3_assert(gum_w == mug_w);
-  }
-}
-
-void
-_ch_some_sane(void* han_v, c3_w lef_w)
-{
-  if ( 0 == lef_w ) {
-    _ch_buck_sane((u3h_buck*)han_v);
-  }
-  else _ch_node_sane((u3h_node*)han_v, lef_w);
-}
-
-/* u3h_sane(): check hashtable integrity.
-*/
-void
-u3h_sane(u3p(u3h_root) har_p)
-{
-  c3_w i_w;
-  u3h_root* har_u = u3to(u3h_root, har_p);
-  u3h_slot sot_w;
-
-  for ( i_w = 0; i_w < 64; i_w++ ) {
-    sot_w = har_u->sot_w[i_w];
-    if ( _(u3h_slot_is_null(sot_w)) ) {
-      continue;
-    }
-    else if ( _(u3h_slot_is_noun(sot_w)) ) {
-      continue;
-    }
-    else if ( _(u3h_slot_is_node(sot_w)) ) {
-      u3h_node* han_u = u3h_slot_to_node(sot_w);
-
-      _ch_node_sane(han_u, 25);
-    }
-    else {
-      c3_assert(0);  //  unknown contents
     }
   }
 }
