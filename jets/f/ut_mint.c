@@ -802,8 +802,7 @@
         return ret;
       }
 
-      case c3__ktsg:
-      case c3__cold: p_gen = u3t(gen);
+      case c3__ktsg: p_gen = u3t(gen);
       _mint_used();
       {
 
