@@ -1048,7 +1048,7 @@ u3j_ream(void)
                     name=term
                     hooks=(map term axis)
                 ==
-+=  static      (each payload=* parent=static)
++=  static      (each payload=* parent=location)
 +=  dynamic     [where=axis parent=location]
 ::
 +=  registry    [roots=(map * location) parents=(list parent)]
