@@ -444,6 +444,49 @@ typedef struct {
   _n_fist fis_u[0];
 } _n_fink;
 
+static void
+_n_fink_fresh(_n_fink* fin_u)
+{
+  c3_w i_w;
+  for ( i_w = 0; i_w < fin_u->len_w; ++i_w ) {
+    _n_fist* fis_u = &(fin_u->fis_u[i_w]);
+    if ( c3y == u3a_is_junior(u3R, fis_u->bat) ) {
+      fis_u->bat = u3a_take(fis_u->bat);
+    }
+    if ( c3y == u3a_is_junior(u3R, fis_u->pax) ) {
+      fis_u->pax = u3a_take(fis_u->pax);
+    }
+  }
+  if ( c3y == u3a_is_junior(u3R, fin_u->sat) ) {
+    fin_u->sat = u3a_take(fin_u->sat);
+  }
+}
+
+static c3_w
+_n_mark_fink(_n_fink* fin_u)
+{
+  c3_w i_w, tot_w = u3a_mark_ptr(fin_u);
+  for ( i_w = 0; i_w < fin_u->len_w; ++i_w ) {
+    _n_fist* fis_u = &(fin_u->fis_u[i_w]);
+    tot_w += u3a_mark_noun(fis_u->bat);
+    tot_w += u3a_mark_noun(fis_u->pax);
+  }
+  tot_w += u3a_mark_noun(fin_u->sat);
+  return tot_w;
+}
+
+static void
+_n_free_fink(_n_fink* fin_u)
+{
+  c3_w i_w;
+  for ( i_w = 0; i_w < fin_u->len_w; ++i_w ) {
+    _n_fist* fis_u = &(fin_u->fis_u[i_w]);
+    u3z(fis_u->bat);
+    u3z(fis_u->pax);
+  }
+  u3a_wfree(fin_u);
+}
+
 typedef struct {
   c3_y     sat_y;
   u3_noun  axe;
@@ -463,6 +506,96 @@ typedef struct {
 #define KICK_NONE 0
 #define KICK_LOC  1
 #define KICK_BYC  2
+
+static void
+_n_site_fresh(_n_site* sit_u, u3p(u3h_root) mov_p)
+{
+  u3_weak got;
+
+  if ( c3y == u3a_is_junior(u3R, sit_u->axe) ) {
+    sit_u->axe = u3a_take(sit_u->axe);
+  }
+
+  switch ( sit_u->sat_y ) {
+    case KICK_NONE:
+      break;
+    case KICK_LOC:
+      if ( c3y == u3a_is_junior(u3R, sit_u->loc_u.lab) ) {
+        sit_u->loc_u.lab = u3a_take(sit_u->loc_u.lab);
+      }
+      _n_fink_fresh(sit_u->fin_u);
+      break;
+    case KICK_BYC:
+      if ( c3y == u3a_is_junior(u3R, sit_u->bat) ) {
+        sit_u->bat = u3a_take(sit_u->bat);
+      }
+      break;
+    default:
+      c3_assert(0);
+  }
+
+  switch ( sit_u->sat_y ) {
+    case KICK_NONE:
+      break;
+    case KICK_LOC:
+    case KICK_BYC:
+      got = u3h_get(mov_p, u3a_outa(sit_u->pog));
+      if ( u3_none != got ) {
+        sit_u->pog = u3a_into(got);
+      }
+      break;
+    default:
+      c3_assert(0);
+  }
+}
+
+static c3_w
+_n_mark_site(_n_site* sit_u)
+{
+  c3_w tot_w = u3a_mark_ptr(sit_u);
+  tot_w     += u3a_mark_noun(sit_u->axe);
+
+  // we don't mark pog because we don't own it
+  switch ( sit_u->sat_y ) {
+    case KICK_NONE:
+      break;
+    case KICK_BYC:
+      tot_w += u3a_mark_noun(sit_u->bat);
+      break;
+    case KICK_LOC:
+      tot_w += _n_mark_fink(sit_u->loc_u.fin_u);
+      tot_w += u3a_mark_noun(sit_u->loc_u.lab);
+      break;
+    default:
+      c3_assert(0);
+  }
+
+  return tot_w;
+}
+
+static void
+_n_free_site(_n_site* sit_u)
+{
+  c3_w tot_w = u3a_mark_ptr(sit_u);
+  u3z(sit_u->axe);
+  // we don't free pog because we don't own it
+
+  switch ( sit_u->sat_y ) {
+    case KICK_NONE:
+      break;
+    case KICK_BYC:
+      u3z(sit_u->bat);
+      break;
+    case KICK_LOC:
+      _n_free_fink(sit_u->loc_u.fin_u);
+      u3z(sit_u->loc_u.lab);
+      break;
+    default:
+      c3_assert(0);
+  }
+
+  u3a_wfree(sit_u);
+}
 
 static u3_weak
 _n_kick_fine(u3_noun cor, _n_site sit_u)
@@ -529,7 +662,7 @@ _n_kick_slow(u3_noun cor, _n_site sit_u, u3_noun loc)
       }
       else {
         sit_u->loc_u = { .jet_o = c3n,
-                         .lab   = lab }
+                         .lab   = lab };
       }
       return _n_kick_fine(cor, sit_u);
     }
@@ -2060,8 +2193,11 @@ _n_take_byc(c3_y* pog)
         }
         break;
 
-      case CUSH: case FRAG: case FLAG: case LILN: case LITN:
-      case SAMN: case TICK: case KICK:
+      // don't take call sites, those are handled
+      // in _n_walk_sites()
+
+      case CUSH: case FRAG: case FLAG:
+      case LILN: case LITN: case SAMN:
         _n_take_narg(pog, gop, 0, &ip_s);
         break;
 
@@ -2080,7 +2216,7 @@ _n_take_byc(c3_y* pog)
 /* _n_reap(): reap key and value from byc table.
 */
 static void
-_n_reap(u3_noun kev)
+_n_reap(u3_noun kev, u3p(u3h_root) mov_p)
 {
   u3_noun fol = u3h(kev);
   u3_noun got = u3t(kev);
@@ -2092,9 +2228,31 @@ _n_reap(u3_noun kev)
     c3_y*   pog = u3a_into(got);
     c3_y*   gop = _n_take_byc(pog);
     u3_noun tog = u3a_outa(gop);
+    u3h_put(mov_p, got, tog);
     u3h_put(u3R->byc.har_p, lof, tog);
   }
   u3z(lof);
+}
+
+static void
+_n_walk_sites(u3_noun kev, u3p(u3h_root) mov_p)
+{
+  c3_y* pog = u3a_into(u3t(kev));
+  c3_y cod_y;
+  c3_s ip_s  = 0;
+
+  while ( pog[ip_s] != HALT ) {
+    cod_y = pog[ip_s++];
+    switch ( cod_y ) {
+      case TICK: case KICK:
+        _n_site_fresh(u3a_into(_n_rean(pog, &ip_s)), mov_p);
+        break;
+
+      default:
+        ip_s += _n_arg(cod_y);
+        break;
+    }
+  }
 }
 
 /* u3n_beep(): promote bytecode state.
@@ -2102,7 +2260,17 @@ _n_reap(u3_noun kev)
 void
 u3n_beep(u3p(u3h_root) har_p)
 {
-  u3h_walk(har_p, _n_reap);
+  u3p(u3h_root) mov_p = u3h_new();
+  u3h_walk_with(har_p, _n_reap, mov_p);
+  while ( 1 ) {
+    u3h_walk_with(har_p, _n_walk_sites, mov_p);
+    if ( rod_u->par_p ) {
+      rod_u = u3to(u3_road, rod_u->par_p);
+      har_p = rod_u->byc.har_p;
+    }
+    else break;
+  }
+  u3h_free(mov_p);
 }
 
 /* _n_mark_byc(): mark bytecode for gc.
@@ -2122,8 +2290,13 @@ _n_mark_byc(c3_y* pog)
         ip_s += _n_arg(cod_y);
         break;
 
-      case CUSH: case FRAG: case FLAG: case LILN: case LITN:
-      case SAMN: case TICK: case KICK:
+      case TICK: case KICK:
+        non = _n_rean(pog, &ip_s);
+        tot_w += _n_mark_site(u3a_into(non));
+        break;
+
+      case CUSH: case FRAG: case FLAG:
+      case LILN: case LITN: case SAMN:
         non = _n_rean(pog, &ip_s);
         tot_w += u3a_mark_noun(non);
         break;
@@ -2182,8 +2355,12 @@ _n_free_byc(c3_y* pog)
         ip_s += _n_arg(cod_y);
         break;
 
-      case CUSH: case FRAG: case FLAG: case LILN: case LITN:
-      case SAMN: case TICK: case KICK:
+      case TICK: case KICK:
+        _n_free_site(u3a_into(_n_rean(pog, &ip_s)));
+        break;
+
+      case CUSH: case FRAG: case FLAG:
+      case LILN: case LITN: case SAMN:
         u3z(_n_rean(pog, &ip_s));
         break;
 

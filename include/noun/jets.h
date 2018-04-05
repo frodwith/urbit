@@ -111,6 +111,26 @@
         u3_weak
         u3j_kick(u3_noun cor, u3_noun axe);
 
+      /* u3j_kick_z(): Try to kick by jet with resolved hot state.
+       *               If no kick, produce u3_none.
+      **
+      ** `cor` is RETAINED iff there is no kick, TRANSFERRED if one.
+      ** `axe` is RETAINED.
+      */
+        u3_weak
+        u3j_kick_z(u3_noun cor,
+                   u3j_core* cop_u,
+                   u3j_harm* ham_u,
+                   u3_atom axe);
+
+      /* u3j_nail(): resolve hot state for location and axis. RETAIN.
+       *             return value indicates presence of driver.
+       */
+        c3_o
+        u3j_nail(u3_noun loc, u3_noun axe,
+                 u3_noun* lab, u3j_core** cop_u, u3j_core** ham_u);
+
+
       /* u3j_kink(): kick either by jet or by nock.
       */
         u3_noun
