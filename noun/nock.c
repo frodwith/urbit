@@ -2262,13 +2262,11 @@ u3n_beep(u3p(u3h_root) har_p)
 {
   u3p(u3h_root) mov_p = u3h_new();
   u3h_walk_with(har_p, _n_reap, mov_p);
-  while ( 1 ) {
-    u3h_walk_with(har_p, _n_walk_sites, mov_p);
-    if ( rod_u->par_p ) {
-      rod_u = u3to(u3_road, rod_u->par_p);
-      har_p = rod_u->byc.har_p;
-    }
-    else break;
+  u3h_walk_with(har_p, _n_walk_sites, mov_p);
+
+  for ( rod_u = u3R; rod_u;
+        rod_u = u3to(u3_road, rod_u->par_p) ) {
+    u3h_walk_with(rod_u->byc.har_p, _n_walk_sites, mov_p);
   }
   u3h_free(mov_p);
 }
