@@ -16,6 +16,7 @@
   /* u3n_prog: program compiled from nock
    */
   typedef struct _u3n_prog {
+    c3_w        cap_w;                // stack space per invocation
     struct {
       c3_o      own_o;                // program owns ops_y?
       c3_w      len_w;                // length of bytecode (bytes)
