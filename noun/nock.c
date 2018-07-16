@@ -792,49 +792,7 @@ _n_prog_asm_inx(c3_y* buf_y, c3_w* i_w, c3_s inx_s, c3_y cod)
   }
 }
 
-/* _n_mesc(): measure stack size change (signed) after executing op
-static c3_ys
-_n_mesc(u3_noun op)
-{
-  switch ( op ) {
-    case LIL0: case LIL1: case LILB: case LILS: case LIBL:
-    case LISL: case SWAP: case BAIL: case HELD: case TALL:
-    case FABL: case FASL: case FIBL: case FISL: case HALT:
-    case DEEP: case BUMP: case SAM0: case SAM1: case SAMB:
-    case SAMS: case SANB: case SANS: case SAMC: case SBIP:
-    case SIPS: case SWIP: case KICB: case KICS: case TICB:
-    case TICS: case DROP: case LAST: case SNOC:
-      return 0;
-
-    case TAIL: case FABK: case FASK: case FIBK: case FISK:
-    case HEAD: case COPY: case LIT0: case LIT1: case LITB:
-    case LITS: case LIBK: case LISK: case SLIB: case SLIS: 
-      return 1;
-
-    case SKIB: case SKIS:
-      return 2;
-
-    case SAME: case SNOL: case AUTO: case TOSS: case NOCK:
-    case SBIN: case SINS: case SWIN: case WISH: case BUSH:
-    case SUSH: case HECK: case SLOG: case BAST: case SAST:
-    case SAVE: case KUTH: case KUTT: case KUSM: case KUTB:
-    case KUTS: case KITB: case KITS:
-      return -1;
-
-    case NOCT: case NOLK: case AULT: case SALM:
-    case WILS: case BALT: case SALT: case MUTH: case MUTT:
-    case MUSM: case MUTB: case MUTS: case MITB: case MITS:
-      return -2;
-
-    default:
-      c3_assert(0);
-      return 0;
-  }
-}
- */
-
-//#ifdef VERBOSE_BYTECODE
-#if 1
+#ifdef VERBOSE_BYTECODE
 // match to OPCODE TABLE
 static char* opcode_names[] = {
   "halt", "bail",
@@ -885,21 +843,12 @@ _n_prog_asm(u3_noun ops, u3n_prog* pog_u, u3_noun sip)
           mem_s  = 0,
           reg_s  = 0;
   c3_w    i_w    = pog_u->byc_u.len_w-1;
-  //c3_ws   s_ws, cap_ws;
-  //c3_t    seen_before[LAST];
 
-  //memcpy(seen_before, opcode_seen, LAST);
-
-  //cap_ws = s_ws = 1;
   buf_y[i_w] = HALT;
 
   while ( i_w-- > 0 ) {
     u3_noun op = u3h(ops);
     if ( c3y == u3ud(op) ) {
-      // opcode_seen[op] = 1;
-      // subtract because we're iterating backwards
-      // s_ws  -= _n_mesc(op);
-      // fprintf(stderr, "%s[%d]\r\n", opcode_names[op], s_ws);
       switch ( op ) {
         default:
           buf_y[i_w] = (c3_y) u3h(ops);
@@ -918,9 +867,6 @@ _n_prog_asm(u3_noun ops, u3n_prog* pog_u, u3_noun sip)
     }
     else {
       u3_noun cod = u3h(op);
-      // opcode_seen[cod] = 1;
-      // s_ws       -= _n_mesc(cod);
-      // fprintf(stderr, "%s[%d]\r\n", opcode_names[cod], s_ws);
       switch ( cod ) {
         default:
           c3_assert(0);
@@ -1025,22 +971,9 @@ _n_prog_asm(u3_noun ops, u3n_prog* pog_u, u3_noun sip)
         }
       }
     }
-    //cap_ws = c3_max(cap_ws, s_ws);
     ops    = u3t(ops);
   }
-  /*
-  {
-    c3_w i_w;
-    for ( i_w = 0; i_w < LAST; ++i_w ) {
-      if ( !seen_before[i_w] && opcode_seen[i_w] ) {
-        fprintf(stderr, "new opcode: %s\r\n", opcode_names[i_w]);
-      }
-    }
-  }
-  */
-  //pog_u->cap_w = cap_ws;
   u3z(top);
-  //_n_print_byc(pog_u->byc_u.ops_y, 0);
 #ifdef U3_CPU_DEBUG
   // this assert will fail if we overflow a c3_w worth of instructions
   c3_assert(u3_nul == ops);
@@ -1208,6 +1141,9 @@ _n_bint(u3_noun* ops, c3_w* sp_w, c3_w* cap_w,
   }
 }
 
+/* _n_weigh_to(): _n_print_helper to determine what a "large" constant is
+ */
+/*
 static c3_w
 _n_weigh_to(u3_noun som, c3_w max_w)
 {
@@ -1225,7 +1161,11 @@ _n_weigh_to(u3_noun som, c3_w max_w)
     }
   }
 }
+*/
 
+/* _n_print(): pretty-print a nock formula, eliding large constants
+ */
+/*
 static void
 _n_print(u3_noun fol, c3_o tel_o)
 {
@@ -1328,10 +1268,11 @@ _n_print(u3_noun fol, c3_o tel_o)
     fprintf(stderr, "]");
   }
 }
-
+*/
 
 /* _n_comp(): compile nock formula to reversed opcode list
  *            ops is a pointer to a list (to be emitted to)
+ *            sp_w and cap_w are used to track stack depth
  *            fol is the nock formula to compile. RETAIN.
  *            los_o indicates whether we should remove our
  *                  subject from the stack
@@ -1346,9 +1287,6 @@ _n_comp(u3_noun* ops, c3_w* sp_w, c3_w* cap_w,
   c3_w tot_w = 0;
   u3_noun cod, arg, hed, tel;
   u3x_cell(fol, &cod, &arg);
-
-  //_n_print(fol, c3n);
-  //fprintf(stderr, "\r\nstarting stack: %d, lose: %s\r\n", *sp_w, c3y == los_o ? "yes" : "no");
 
   if ( c3y == u3du(cod) ) {
     tot_w += _n_comp(ops, sp_w, cap_w, cod, c3n, c3n);
@@ -1596,73 +1534,11 @@ _n_comp(u3_noun* ops, c3_w* sp_w, c3_w* cap_w,
       u3m_bail(c3__exit);
       return 0;
   }
-  //_n_print(fol, c3n);
-  //fprintf(stderr, "\r\nending stack: %d, lose: %s\r\n", *sp_w, c3y == los_o ? "yes" : "no");
 #ifdef U3_CPU_DEBUG
   c3_assert(*sp_w > ((c3y == los_o) ? 0 : 1));
 #endif
   return tot_w;
 }
-
-/* _n_push(): push a noun onto the stack. RETAIN
- *            mov: -1 north, 1 south
- *            off: 0 north, -1 south
-static inline void
-_n_push(c3_ys mov, c3_ys off, u3_noun a)
-{
-  u3R->cap_p += mov;
-  u3_noun* p = u3to(u3_noun, u3R->cap_p + off);
-  *p = a;
-}
- */
-
-/* _n_peek(): pointer to noun at top of stack
- *            off: 0 north, -1 south
-static inline u3_noun*
-_n_peek(c3_ys off)
-{
-  return u3to(u3_noun, u3R->cap_p + off);
-}
- */
-
-/* _n_peet(): address of the next-to-top of stack
- *            mov: -1 north, 1 south
- *            off: 0 north, -1 south
-static inline u3_noun*
-_n_peet(c3_ys mov, c3_ys off)
-{
-  return u3to(u3_noun, (u3R->cap_p - mov) + off);
-}
- */
-
-/* _n_pop(): pop a noun from the cap stack
- *           mov: -1 north, 1 south
-static inline void
-_n_pop(c3_ys mov)
-{
-  u3R->cap_p -= mov;
-}
- */
-
-/* _n_pep(): pop and return noun from the cap stack
- *           mov: -1 north, 1 south
- *           off: 0 north, -1 south
-static inline u3_noun
-_n_pep(c3_ys mov, c3_ys off)
-{
-  u3_noun r = *(_n_peek(off));
-  _n_pop(mov);
-  return r;
-}
- */
-
-/* _n_toss(): pep and lose
-static inline void
-_n_toss(c3_ys mov, c3_ys off)
-{
-  u3z(_n_pep(mov, off));
-}
- */
 
 /* _n_resh(): read a c3_s from the bytecode stream
  */
@@ -1686,8 +1562,7 @@ _n_rewo(c3_y* buf, c3_w* ip_w)
   return one | (two << 8) | (tre << 16) | (qua << 24);
 }
 
-//#ifdef VERBOSE_BYTECODE
-#if 1
+#ifdef VERBOSE_BYTECODE
 /* _n_print_byc(): print bytecode. used for debugging.
  */
 static void
@@ -1747,12 +1622,8 @@ _n_bite(u3_noun fol) {
   c3_w sp_w    = 1,
        cap_w   = 1;
   u3_noun ops  = u3_nul;
-  //_n_print(fol, c3n);
-  //fprintf(stderr, "\r\n ^^^^TOP LEVEL\r\n");
   _n_comp(&ops, &sp_w, &cap_w, fol, c3y, c3y);
   u3n_prog* pog_u = _n_prog_from_ops(ops, cap_w);
-  //_n_print_byc(pog_u->byc_u.ops_y, 0);
-  //fprintf(stderr, "stack size: %d\r\n", cap_w);
   return pog_u;
 }
 
@@ -1813,19 +1684,6 @@ u3n_find(u3_noun key, u3_noun fol)
   u3t_off(noc_o);
   return pog_p;
 }
-
-/* _n_swap(): swap two items on the top of the stack, return pointer to top
-static inline u3_noun*
-_n_swap(c3_ys mov, c3_ys off)
-{
-  u3_noun* top = _n_peek(off);
-  u3_noun* up   = _n_peet(mov, off);
-  u3_noun  tmp  = *up;
-  *up  = *top;
-  *top = tmp;
-  return top;
-}
-*/
 
 /* _n_kick(): stop tracing noc and kick a u3j_site.
  */
@@ -1952,18 +1810,10 @@ _n_burn(u3n_prog* pog_u, u3_noun bus)
   burnframe* fam   = _n_push_frame(NULL, pog_u, nor_o);
   u3_noun* tak     = fam->tak;
 
-#ifdef U3_CPU_DEBUG
-#define BURN_CHK()     c3_assert( sp_w >= 0 && sp_w < pog_u->cap_w )
-#define BURN_SWC()     c3_assert( sp_w >= 1 && sp_w < pog_u->cap_w )
-#else
-#define BURN_CHK()
-#define BURN_SWC()
-#endif
-
-#define BURN_SWAP()     BURN_SWC(); tmp = tak[sp_w-1]; tak[sp_w-1] = tak[sp_w]; tak[sp_w] = tmp
-#define BURN_PUSH(som)  tak[++sp_w] = som; BURN_CHK();
+#define BURN_SWAP()     tmp = tak[sp_w-1]; tak[sp_w-1] = tak[sp_w]; tak[sp_w] = tmp
+#define BURN_PUSH(som)  tak[++sp_w] = som;
+#define BURN_POP()      tak[sp_w--]
 #define BURN_TOP        tak[sp_w]
-#define BURN_POP()      (BURN_CHK(), tak[sp_w--])
 #define BURN_TOSS()     u3z(BURN_POP())
 #define BURN_REP(som)   u3z(BURN_TOP); BURN_TOP = som
 
