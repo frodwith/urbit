@@ -6392,6 +6392,10 @@
           %|                                            ::  atom
       ==                                                ::
   (pair tope tope)                                      ::  cell
+++  holy                                                ::  holes
+  |-
+  $@  ?                                                 ::  & rock, | hole
+  [$ $]                                                 ::  tree
 ++  hoot                                                ::  hoon tools
   |%
   +$  beer  $@(char [~ p=hoon])                    ::  simple embed
@@ -6538,6 +6542,7 @@
     [%zpts p=hoon]                                      ::  !=
     [%zppt p=(list wing) q=hoon r=hoon]                 ::  !@
     [%zpwt p=$@(p=@ [p=@ q=@]) q=hoon]                  ::  !?
+    [%zptr sand=(lest wing) name=hoon code=hoon]        ::  !*  (formalize)
     [%zpzp ~]                                           ::  !!
   ==                                                    ::
 +$  tyre  (list [p=term q=hoon])                        ::
@@ -8196,6 +8201,88 @@
     --
   --
 ::
+++  ho                                                  ::  holy engine
+  |_  hol=holy
+  ++  sew
+    |=  as=(list axis)
+    ^-  holy
+    ?~  as  hol
+    $(as t.as, hol (poke i.as))
+  ::
+  ++  poke
+    |=  axe=axis
+    ^-  holy
+    ?:  =(1 axe)  |
+    ?:  =(| hol)  |
+    =/  mor=axis  (mas axe)
+    =/  hed=?  =(2 (cap axe))
+    =/  her=holy
+      ?@  hol  &
+      ?:  hed  +.hol  -.hol
+    =/  him=holy
+      %=  $
+        axe  mor
+        hol  ?@  hol  &
+             ?:  hed  -.hol  +.hol
+      ==
+    ?:  &(=(| her) =(| him))  |
+    ?:  hed  [him her]  [her him]
+  ::
+  ++  sift
+    |=  roc=?
+    =/  axe=axis  1
+    |-  ^-  (unit nock)
+    ?@  hol
+      ?.  =(hol roc)  ~
+      `[%0 axe]
+    =/  hed=(unit nock)
+      $(hol -.hol, axe (peg axe 2))
+    =/  tal=(unit nock)
+      $(hol +.hol, axe (peg axe 3))
+    ?~  hed  tal
+    ?~  tal  hed
+    `[u.hed u.tal]
+  ::
+  ++  glue
+    =<  (fab 2 3)
+    |-  ^-  [roc=? sad=? fab=$-([axis axis] nock)]
+    ?@  hol
+      :+  hol  !hol
+      |=  [rox=axis sax=axis]
+      ^-  nock
+      [%0 ?:(hol rox sax)]
+    =/  hed  $(hol -.hol)
+    =/  tal  $(hol +.hol)
+    :+  |(roc.hed roc.tal)
+      |(sad.hed sad.tal)
+    |=  [rox=axis sax=axis]
+    ^-  nock
+    =/  roc=?  &(roc.hed roc.tal)
+    =/  sad=?  &(sad.hed sad.tal)
+    :-  %+  fab.hed
+          ?:(roc (peg rox 2) rox)
+        ?:(sad (peg sax 2) sax)
+    %+  fab.tal
+      ?:(roc (peg rox 3) rox)
+    ?:(sad (peg sax 3) sax)
+  ::
+  ++  wrap
+    |=  [nam=* bod=nock]
+    ^-  nock
+    =/  sad=nock  (need (sift |))
+    =/  roc=nock  (need (sift &))
+    :+  %7  [roc sad]
+    :+  %2  [%0 3]
+    ::  uncomment to produce the subject and formula
+    ::  :-  [%1 0 1]
+    ::  :-  [%1 1]
+    :+  [%1 11]  [%1 %form %1 nam]
+    :+  [%1 7]
+      :+  [%1 8]  [[%1 1] %0 2]
+      [%1 glue]
+    [%1 bod]
+  --
+::
 ++  ap                                                  ::  hoon engine
   ~%    %ap
       +>+
@@ -9642,6 +9729,17 @@
     ?~  hup
       [%| (mint %noun gen)]
     (find way u.hup)
+  ::                                                    ::
+  ++  fins                                              ::  resolve legs
+    |=  win=(lest wing)
+    ^-  (unit (lest axis))
+    =/  pon  (fond %free i.win)
+    ?.  ?=([%& *] pon)  ~
+    =*  ax  (tend p.p.pon)
+    ?~  t.win  `~[ax]
+    =/  mor  $(win t.win)
+    ?~  mor  ~
+    `[ax u.mor]
   ::
   ++  fine
     ~/  %fine
@@ -10202,6 +10300,18 @@
         [%zpts *]   [(nice %noun) [%1 q:$(vet |, gen p.gen)]]
         [%zppt *]   ?:((feel p.gen) $(gen q.gen) $(gen r.gen))
     ::
+        [%zptr *]
+      =+  $(gen code.gen)
+      :-  p
+      %.  =/  col=nock  q:$(gen [%ktsg name.gen])
+          ?.  ?=(%1 -.col)
+            ~>(%mean.'mint-plex' !!)
+          [p.col q]
+      %~  wrap  ho
+      =/  fin=(unit (lest axis))  (fins sand.gen)
+      ?~  fin  ~>(%mean.'mint-fins' !!)
+      (~(sew ho &) u.fin)
+    ::
         [%zpzp ~]  [%void [%0 0]]
         *
       =+  doz=~(open ap gen)
@@ -10371,6 +10481,10 @@
       ?:  -<
         $(gen q.gen)
       $(gen r.gen)
+    ::
+        [%zptr *]
+      ?~  (fins sand.gen)  ~>(%mean.'mull-fins' !!)
+      $(gen code.gen)
     ::
         [%zpzp *]  (beth %void)
         *
@@ -10669,6 +10783,8 @@
       [%zpgl *]  (play [%kttr p.gen])
       [%zpts *]  %noun
       [%zppt *]  ?:((feel p.gen) $(gen q.gen) $(gen r.gen))
+      [%zptr *]  ?~  (fins sand.gen)  ~>(%mean.'play-fins' !!)
+                 $(gen code.gen)
       [%zpzp *]  %void
       *          =+  doz=~(open ap gen)
                  ?:  =(doz gen)
@@ -13321,6 +13437,7 @@
                   ['>' (rune gar %zpgr expa)]
                   ['<' (rune gal %zpgl exqc)]
                   ['@' (rune pat %zppt expy)]
+                  ['*' (rune tar %zptr exp2)]
                   ['=' (rune tis %zpts expa)]
                   ['?' (rune wut %zpwt hinh)]
               ==
@@ -13371,23 +13488,27 @@
           ==
         ==
       ==
-   ::  parses a or [a b c] or a  b  c  ==
-   ++  lynx
-      =/  wid  (ifix [sel ser] (most ace sym))
+    ::  parse rule or [rule rule rule] or  rule  rule  rule  ==
+    ++  lank
+      |*  in=rule
+      =/  wid  (ifix [sel ser] (most ace in))
       =/  tal
         ;~  sfix
-          (most gap sym)
+          (most gap in)
           ;~(plug gap duz)
         ==
       =/  one
-        %-  cook  :_  sym
-        |=  a=term
-        `(list term)`~[a]
+        %-  cook  :_  in
+        |*  a=*
+        `(list _a)`~[a]
       %-  cook
       :_  ;~(pose (runq wid tal) one)
       ::  lestify
-      |=  a=(list term)
+      |*  a=(list)
       ?~(a !! a)
+    ::
+    ++  fink  (lank rope)
+    ++  lynx  (lank sym)
     ++  whap  !:                                        ::  chapter
       %+  cook
         |=  a=(list (pair term hoon))
@@ -13554,6 +13675,7 @@
     ++  expy  |.(;~(gunk ropa loaf loaf))               ::  wings and two hoons
     ++  expz  |.(loaf(bug &))                           ::  hoon with tracing
     ++  exp1  |.(;~(gunk loan loaf loaf loaf))          ::  spec and three hoons
+    ++  exp2  |.(;~(gunk fink loaf loaf))               ::  [wings] hoon hoon
     ::    spec contents
     ::
     ++  exqa  |.(loan)                                  ::  one hoon
