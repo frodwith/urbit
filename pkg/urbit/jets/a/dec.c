@@ -53,3 +53,12 @@
     u3z(a);
     return b;
   }
+
+  u3_noun
+  u3f_dec(u3_noun bus, u3_noun fol)
+  {
+    u3m_p("formal dec", bus);
+    return ( c3y == u3ud(bus) )
+      ? u3qa_dec(bus)
+      : u3m_bail(c3__exit);
+  }

@@ -96,6 +96,7 @@
     /* u3a_jets: jet dashboard
     */
       typedef struct _u3a_jets {
+        u3p(u3h_root) fod_p;                  //  formal drivers (home road)
         u3p(u3h_root) hot_p;                  //  hot state (home road only)
         u3p(u3h_root) war_p;                  //  warm state
         u3p(u3h_root) cod_p;                  //  cold state

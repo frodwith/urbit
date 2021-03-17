@@ -1060,7 +1060,7 @@ _n_bint(u3_noun* ops, u3_noun hif, u3_noun nef, c3_o los_o, c3_o tel_o)
 
           //  no currently recognized dynamic hints
           //
-          case u3_none: {
+          case c3__form: {
             u3_noun fen = u3_nul;
             c3_w  nef_w = _n_comp(&fen, nef, los_o, tel_o);
             // add appropriate hind opcode
@@ -1728,9 +1728,25 @@ _n_hilt_hind(u3_noun tok, u3_noun pro)  // transfer, retain
 static c3_o
 _n_hint_fore(u3_cell hin, u3_noun bus, u3_noun* clu)
 {
-  u3z(hin); u3z(*clu);
-  *clu = u3_nul;
-  return c3y;
+  u3_weak pro = u3_none;
+
+  switch ( u3h(hin) ) {
+    case c3__form:
+      pro = u3j_form(*clu, bus, u3t(hin));
+      break;
+  }
+
+  u3z(hin);
+  u3z(*clu);
+
+  if ( u3_none == pro ) {
+    *clu = u3_nul;
+    return c3y;
+  }
+  else {
+    *clu = pro;
+    return c3n;
+  }
 }
 
 /* _n_hint_hind(): arbitrary dynamic hint, after formula evaluation.

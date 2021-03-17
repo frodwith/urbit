@@ -812,6 +812,80 @@ _cj_hot_mean(c3_l par_l, u3_noun nam)
   return 0;
 }
 
+typedef struct {
+  const c3_c* lab_c;
+  u3_funq     fun_f;
+} cj_fent;
+
+static cj_fent fol_u[] = {
+  { "/hoon/141/dec", u3f_dec },
+};
+
+// string to noun label, i.e.
+// _cj_path({"/a/b/c"}) -> [%a %b %c ~]
+static u3_noun
+_cj_path(const c3_c* lab_c)
+{
+  u3_noun pro;
+  c3_w    len_w;
+  c3_c    *dup_c, *sav_c, *tok_c;
+
+  len_w = strlen(lab_c);
+  dup_c = u3a_malloc(len_w + 1);
+  pro   = u3_nul;
+  strncpy(dup_c, lab_c, len_w);
+
+
+  tok_c = strtok_r(dup_c, "/", &sav_c);
+  do {
+    pro = u3nc(u3i_string(tok_c), pro);
+  } while ( (tok_c = strtok_r(NULL, "/", &sav_c) ) );
+
+  return u3kb_flop(pro);
+}
+
+static c3_l
+_cj_form_install()
+{
+  cj_fent *i_u;
+  c3_l i_l, len_l = (c3_l)(sizeof(cj_fent) / sizeof(fol_u));
+  u3p(u3h_root) har_p = u3H->rod_u.jed.fod_p;
+
+  for ( i_l = 0, i_u = fol_u; i_l < len_l; ++i_l, ++i_u ) {
+    u3h_put(har_p, _cj_path(i_u->lab_c), i_l);
+  }
+
+  return len_l;
+}
+
+/* u3j_form(): formal jet matching for lab/fol. RETAIN.
+**   lab: a noun formally labelling the computation.
+**   bus: the subject of the computation.
+**   fol: the formula being replaced.
+**   return: product or u3_none
+*/
+u3_weak
+u3j_form(u3_noun lab, u3_noun bus, u3_noun fol)
+{
+  u3_weak got = u3h_get(u3H->rod_u.jed.fod_p, lab);
+  if ( u3_none == got ) {
+    return u3_none;
+  }
+  else {
+    /* formal jet matching has several modes:
+     *** gull just believes that the wrapped nock formula (u3t(hin))
+     *   identifies the named computation (*clu) and runs any driver
+     *   it has instead of nock.
+     *** dupe does likewise, but remembers formulae it has seen.
+     (unimplimented)
+     *** wise consults dupe's log, and only runs jets for logged formulae
+     (unimplemented, obviously and frankly)
+     * N.B. could use hashes instead of whole formulae in dupe and wise.
+     */
+    return fol_u[got].fun_f(bus, fol);
+  }
+}
+
 /* u3j_boot(): initialize jet system.
 */
 c3_w
@@ -827,8 +901,13 @@ u3j_boot(c3_o nuu_o)
 
   if ( c3n == nuu_o ) {
     u3h_free(u3R->jed.hot_p);
+    u3h_free(u3R->jed.fod_p);
   }
+
   u3R->jed.hot_p = u3h_new();
+  u3R->jed.fod_p = u3h_new();
+
+  u3l_log("boot: installed %d formal jets.\r\n", _cj_form_install());
 
   return _cj_install(u3D.ray_u, 1,
                      (c3_l) (long long) u3D.dev_u[0].par_u,
@@ -2337,6 +2416,7 @@ u3j_mark(FILE* fil_u)
 
   if ( u3R == &(u3H->rod_u) ) {
     tot_w += u3a_maid(fil_u, "  hot jet state", u3h_mark(u3R->jed.hot_p));
+    tot_w += u3a_maid(fil_u, "  formal jet state", u3h_mark(u3R->jed.fod_p));
   }
 
   return u3a_maid(fil_u, "total jet stuff", tot_w);
@@ -2367,6 +2447,7 @@ u3j_free(void)
   u3h_free(u3R->jed.bas_p);
   if ( u3R == &(u3H->rod_u) ) {
     u3h_free(u3R->jed.hot_p);
+    u3h_free(u3R->jed.fod_p);
   }
 }
 

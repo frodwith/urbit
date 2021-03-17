@@ -301,3 +301,8 @@
       */
         void
         u3j_rewrite_compact();
+
+     /* u3j_form(): formal (formula-only) jet matching
+      */
+        u3_weak
+        u3j_form(u3_noun, u3_noun, u3_noun);
