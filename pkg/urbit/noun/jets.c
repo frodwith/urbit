@@ -835,12 +835,12 @@ _cj_path(const c3_c* lab_c)
   pro   = u3_nul;
   strncpy(dup_c, lab_c, len_w);
 
-
   tok_c = strtok_r(dup_c, "/", &sav_c);
   do {
     pro = u3nc(u3i_string(tok_c), pro);
   } while ( (tok_c = strtok_r(NULL, "/", &sav_c) ) );
 
+  u3a_free(dup_c);
   return u3kb_flop(pro);
 }
 
@@ -852,7 +852,9 @@ _cj_form_install()
   u3p(u3h_root) har_p = u3H->rod_u.jed.fod_p;
 
   for ( i_l = 0, i_u = fol_u; i_l < len_l; ++i_l, ++i_u ) {
-    u3h_put(har_p, _cj_path(i_u->lab_c), i_l);
+    u3_noun lab = _cj_path(i_u->lab_c);
+    u3h_put(har_p, lab, i_l);
+    u3z(lab);
   }
 
   return len_l;
@@ -2489,7 +2491,10 @@ u3j_rewrite_compact()
 
   if ( u3R == &(u3H->rod_u) ) {
     u3h_rewrite(u3R->jed.hot_p);
+    u3h_rewrite(u3R->jed.fod_p);
+
     u3R->jed.hot_p = u3a_rewritten(u3R->jed.hot_p);
+    u3R->jed.fod_p = u3a_rewritten(u3R->jed.fod_p);
   }
 
   u3R->jed.war_p = u3a_rewritten(u3R->jed.war_p);
