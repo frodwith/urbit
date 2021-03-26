@@ -2,28 +2,52 @@
 :-  %say
 |=  *
 :-  %noun
-=<  %.  :-  42
-        =-  ~&  -  -
-        =>  to=0
-        !.
-        !=  =|  i=@
-            |-
-            =/  up  +(i)
-            ?:  =(up to)  i
-            $(i up)
-    %^  (draw _~)  ~
-      ^=  hint
-      |=  [bus=* fol=* clu=clue sat=_~]
-      sat
-    ^=  miss
-    |=  [bus=* fol=[op=@ arg=*] sat=_~]
-    [~ sat]
+=<  %-  (road | &)
+    :-  .
+    !.  !=
+    =<  (. 9)
+    |=  n=@
+    ^-  @
+    ~+
+    ~>  %slog.[0 leaf+"iter"]
+    ?:  (lth n 2)  1
+    =/  low=@  (dec n)
+    %+  add
+      $(n low)
+    $(n (dec low))
 =>  |%
     +$  clue
       $@  nam=@
       [nam=@ clu=*]
     --
 |%
+++  road
+  |=  $:  mem=?
+          log=?
+      ==
+  |=  [bus=* fol=*]
+  ^-  (unit *)
+  =<  -
+  %.  +<
+  =/  state  (map ^ *)
+  %+  (draw state)  *state
+  :_  |=  [* * sat=state]  [~ sat]
+  |=  [bus=* fol=* clu=clue sat=state]
+  ?@  clu  ~
+  ?+  clu  ~
+    [%slog *]
+      ?.  log  ~
+      ~>(%slog.clu.clu ~)
+    [%memo *]
+      ?.  mem  ~
+      =/  key=^  [bus fol]
+      =/  got=(unit *)  (~(get by sat) key)
+      ?^  got  [%& got sat]
+      :-  %|
+      |=  [pro=(unit *) sat=state]
+      ?~  pro  sat
+      (~(put by sat) key u.pro)
+  ==
 ++  draw
   ::  configurable nock interpreter with state
   |*  state=mold
