@@ -2,12 +2,29 @@
 :-  %say
 |=  *
 :-  %noun
-=<  %-  (road | &)
+=<  =/  jets  %-  ~(gas by *(map * $-(^ *)))
+      :~  :-  /hoon/140/inc
+            |=  [bus=* fol=*]
+            ~>  %slog.[0 leaf+"omg increment!!"]
+            ?^  bus  !!
+            +(bus)
+      ==
+     %-  (road & & & & jets)
+    =>  ..mock
     :-  .
     !.  !=
     =<  (. 9)
+    ::|=  n=@
+    ::!*  n  /hoon/140/dec
+    ::=|  i=@
+    ::|-  ^+  i
+    ::=/  up=@  +(i)
+    ::?:  =(up n)  i
+    ::$(i up)
+    ~>  %jets.~[[4 0 1]^/hoon/140/inc]
     |=  n=@
     ^-  @
+    ~>  %toss.=>(n=n ~>(%form./hoon/140/inc +(n)))
     ~+
     ~>  %slog.[0 leaf+"iter"]
     ?:  (lth n 2)  1
@@ -24,51 +41,70 @@
 ++  road
   |=  $:  mem=?
           log=?
+          col=?
+          pac=?
+          drv=(map * $-(^ *))
       ==
   |=  [bus=* fol=*]
-  ^-  (unit *)
-  =<  -
+  ^-  $:  $%  [%& pro=*]
+              [%| tax=(list *)]
+          ==
+          pack=(list ^)
+      ==
+  =-  :_  ~(tap by reg)
+      ?~(-< |+tax &+u)
   %.  +<
-  =/  state  (map ^ *)
-  %+  (draw state)  *state
+  =/  state
+    $:  mem=(map ^ (unit *))
+        reg=(map * *)
+        tax=(list *)
+    ==
+  =/  d  (draw state)
+  %+  d  *state
   :_  |=  [* * sat=state]  [~ sat]
-  |=  [bus=* fol=* clu=clue sat=state]
-  ?@  clu  ~
-  ?+  clu  ~
-    [%slog *]
-      ?.  log  ~
-      ~>(%slog.clu.clu ~)
-    [%memo *]
-      ?.  mem  ~
-      =/  key=^  [bus fol]
-      =/  got=(unit *)  (~(get by sat) key)
-      ?^  got  [%& got sat]
-      :-  %|
-      |=  [pro=(unit *) sat=state]
-      ?~  pro  sat
-      (~(put by sat) key u.pro)
+  |=  [in.d clu=clue noc=nunc.d]
+  ^-  out.d
+  =*  skip  (noc bus fol sat)
+  ?+  clu  skip
+      [?(%hunk %lose %mean %spot) *]
+    =/  pro  (noc bus fol sat(tax [clu tax.sat]))
+    ?~  -.pro  pro
+    pro(tax tax.sat)
+      [%slog *]
+      ?.  log  skip
+      ~>(%slog.clu.clu skip)
+      [%memo *]
+    ?.  mem  skip
+    =/  key=^  [bus fol]
+    =/  got  (~(get by mem.sat) key)
+    ?^  got  [u.got sat]
+    =/  pro  skip
+    pro(mem (~(put by mem.pro) key -.pro))
+      [%form *]
+    ?.  col  skip
+    =/  jet  (~(get by drv) clu.clu)
+    =/  pro
+      ?~  jet  skip
+      (noc [u.jet bus fol] [9 2 10 [6 0 3] 0 2] sat)
+    pro(reg (~(put by reg.pro) fol clu.clu))
+      [%jets *]
+    ?.  pac  skip
+    =/  par=(unit (list ^))  ((soft (list ^)) clu.clu)
+    ?~  par  skip
+    =.  reg.sat  (~(gas by reg.sat) u.par)
+    skip
   ==
 ++  draw
   ::  configurable nock interpreter with state
   |*  state=mold
   =>  |%
-      +$  prod
-        $:  (unit *)
-            sat=state
-        ==
-      +$  hunt
-        $@  ~
-        $%  [%& pro=prod]
-            [%| con=$-(prod state)]
-        ==
-      +$  wolf
-        $:  $=  hint
-            $-  [bus=* fol=* clu=clue sat=state]
-              hunt
-            $=  miss
-            $-  [bus=* fol=[op=@ arg=*] sat=state]
-              prod
-        ==
+      +$  out   [(unit *) state]
+      +$  in    [bus=* fol=* sat=state]
+      +$  nunc  $-(in out)
+      +$  hunt  $-([in clu=clue noc=nunc] out)
+      +$  miss  $-  [bus=* [op=@ arg=*] sat=state]
+                out
+      +$  wolf  [=hunt =miss]
       ++  frag
         |=  [axe=@ non=*]
         ^-  (unit *)
@@ -103,17 +139,19 @@
   =<  nock
   |%
   ++  exit
-    ^-  prod
+    ^-  out
     [~ sat]
   ++  ret
     |=  pro=*
-    ^-  prod
+    ^-  out
     [`pro sat]
+  ++  fall
+    |=  in
+    ^-  out
+    (nock(sat sat) bus fol)
   ++  nock
     |=  [bus=* fol=*]
-    ::~&  begin=+<
-    ::=-  ~&  end=[bus=bus fol=fol pro=-]  -
-    ^-  prod
+    ^-  out
     ?@  fol  exit
     ?^  -.fol 
       =^  hed  sat  $(fol -.fol)
@@ -134,7 +172,6 @@
       ?~  sub  exit
       =^  lof  sat  $(fol +>.fol)
       ?~  lof  exit
-      ~!  sub
       $(bus u.sub, fol u.lof)
         %3 
       =^  non  sat  $(fol +.fol)
@@ -193,13 +230,7 @@
       ?@  +.fol  exit
       =/  howl
         |=  clu=clue
-        ^-  prod
-        =/  hun  (hint.wol bus +>.fol clu sat)
-        ?:  ?=  [%& *]  hun
-          pro.hun
-        =/  pro  ^$(fol +>.fol)
-        ?~  hun  pro
-        pro(sat (con.hun pro))
+        (hunt.wol [bus +>.fol sat] clu fall)
       ?@  +<.fol  (howl +<.fol)
       ?^  +<-.fol  exit
       =^  clu  sat  $(fol +<+.fol)
