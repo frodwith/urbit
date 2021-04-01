@@ -2,40 +2,53 @@
 :-  %say
 |=  *
 :-  %noun
-=<  =/  jets  %-  ~(gas by *(map * $-(^ *)))
+=<  =/  scry
+      |=  [ref=* pat=*]
+      ^-  (unit (unit))
+      ``42
+    =/  jets  %-  ~(gas by *(map * $-(^ *)))
       :~  :-  /hoon/140/inc
             |=  [bus=* fol=*]
             ~>  %slog.[0 leaf+"omg increment!!"]
             ?^  bus  !!
             +(bus)
       ==
-     %-  (road & & & & jets)
-    =>  ..mock
-    :-  .
-    !.  !=
-    =<  (. 9)
-    ::|=  n=@
-    ::!*  n  /hoon/140/dec
-    ::=|  i=@
-    ::|-  ^+  i
-    ::=/  up=@  +(i)
-    ::?:  =(up n)  i
-    ::$(i up)
-    ~>  %jets.~[[4 0 1]^/hoon/140/inc]
-    |=  n=@
-    ^-  @
-    ~>  %toss.=>(n=n ~>(%form./hoon/140/inc +(n)))
-    ~+
-    ~>  %slog.[0 leaf+"iter"]
-    ?:  (lth n 2)  1
-    =/  low=@  (dec n)
-    %+  add
-      $(n low)
-    $(n (dec low))
+    %-  (road & & & & jets `scry)
+    :-  ~
+    [12 [1 1] 1 1]
+    ::  =>  ..mock
+    ::  :-  .
+    ::  !.  !=
+    ::  =<  (. 9)
+    ::  ::  |=  n=@
+    ::  ::  !*  n  /hoon/140/dec
+    ::  ::  =|  i=@
+    ::  ::  |-  ^+  i
+    ::  ::  =/  up=@  +(i)
+    ::  ::  ?:  =(up n)  i
+    ::  ::  $(i up)
+    ::  ::  ~>  %jets.~[[4 0 1]^/hoon/140/inc]
+    ::  |=  n=@
+    ::  ^-  @
+    ::  ::  ~>  %toss.=>(n=n ~>(%form./hoon/140/inc +(n)))
+    ::  ~+
+    ::  ::  ~>  %slog.[0 leaf+"iter"]
+    ::  ?:  (lth n 2)  1
+    ::  =/  low=@  (dec n)
+    ::  %+  add
+    ::    $(n low)
+    ::  $(n (dec low))
 =>  |%
     +$  clue
       $@  nam=@
       [nam=@ clu=*]
+    +$  rope
+      $:  $%  [%0 pro=*]
+              [%1 blk=*]
+              [%2 tax=(list [@ *])]
+          ==
+          pak=(list ^)
+      ==
     --
 |%
 ++  road
@@ -44,67 +57,102 @@
           col=?
           pac=?
           drv=(map * $-(^ *))
+          sky=(unit $-(^ (unit (unit))))
       ==
   |=  [bus=* fol=*]
-  ^-  $:  $%  [%& pro=*]
-              [%| tax=(list *)]
-          ==
-          pack=(list ^)
-      ==
+  ^-  rope
   =-  :_  ~(tap by reg)
-      ?~(-< |+tax &+u)
+      ?^  -<   0+u
+      ?~  blk  2+tax
+      1+u.blk
   %.  +<
   =/  state
     $:  mem=(map ^ (unit *))
         reg=(map * *)
-        tax=(list *)
+        tax=(list [@ *])
+        blk=(unit *)
     ==
   =/  d  (draw state)
   %+  d  *state
-  :_  |=  [* * sat=state]  [~ sat]
-  |=  [in.d clu=clue noc=nunc.d]
-  ^-  out.d
-  =*  skip  (noc bus fol sat)
-  ?+  clu  skip
-      [?(%hunk %lose %mean %spot) *]
-    =/  pro  (noc bus fol sat(tax [clu tax.sat]))
-    ?~  -.pro  pro
-    pro(tax tax.sat)
-      [%slog *]
-      ?.  log  skip
-      ~>(%slog.clu.clu skip)
-      [%memo *]
-    ?.  mem  skip
-    =/  key=^  [bus fol]
-    =/  got  (~(get by mem.sat) key)
-    ?^  got  [u.got sat]
-    =/  pro  skip
-    pro(mem (~(put by mem.pro) key -.pro))
-      [%form *]
-    ?.  col  skip
-    =/  jet  (~(get by drv) clu.clu)
-    =/  pro
-      ?~  jet  skip
-      (noc [u.jet bus fol] [9 2 10 [6 0 3] 0 2] sat)
-    pro(reg (~(put by reg.pro) fol clu.clu))
-      [%jets *]
-    ?.  pac  skip
-    =/  par=(unit (list ^))  ((soft (list ^)) clu.clu)
-    ?~  par  skip
-    =.  reg.sat  (~(gas by reg.sat) u.par)
-    skip
-  ==
+  |%
+  ++  miss
+    |=  [bus=* [op=@ arg=*] sat=state]
+    ^-  out.d
+    =*  exit  `sat
+    ?:  ?|  ?=(~ sky)
+            ?=(@ arg)
+            !=(12 op)
+        ==
+      exit
+    =/  noc  (d sat ..miss)
+    =^  ref  sat  (noc bus -.arg)
+    ?~  ref  exit
+    =^  pat  sat  (noc bus +.arg)
+    ?~  pat  exit
+    =/  res  (u.sky u.ref u.pat)
+    ?~  res  `sat(blk pat)
+    ?~  u.res  `sat(tax [[%hunk u.ref u.pat] tax.sat])
+    [u.res sat]
+  ++  hunt
+    |=  [in.d clu=clue]
+    ^-  out.d
+    =<  $
+    |%
+    ++  nock  (d sat ..hunt)
+    ++  skip  (nock bus fol)
+    ++  $
+      ?+  clu  skip
+          [?(%hunk %lose %mean %spot) *]
+        =/  pro
+          =.  tax.sat  [clu tax.sat]
+          (nock bus fol)
+        ?~  -.pro  pro
+        pro(tax tax.sat)
+          [%slog *]
+        ?.  log  skip
+        ~>(%slog.clu.clu skip)
+          [%memo *]
+        ?.  mem  skip
+        =/  key=^  [bus fol]
+        =/  got  (~(get by mem.sat) key)
+        ?^  got  [u.got sat]
+        =/  pro  skip
+        pro(mem (~(put by mem.pro) key -.pro))
+          [%form *]
+        ?.  col  skip
+        =/  jet  (~(get by drv) clu.clu)
+        =/  pro
+          ?~  jet  skip
+          ~&  %running-a-jet
+          (nock [u.jet bus fol] [9 2 10 [6 0 3] 0 2])
+        pro(reg (~(put by reg.pro) fol clu.clu))
+          [%jets *]
+        ?.  pac  skip
+        =/  par=(unit (list ^))  ((soft (list ^)) clu.clu)
+        ?~  par  skip
+        =.  reg.sat  (~(gas by reg.sat) u.par)
+        skip
+      ==
+    --
+  --
 ++  draw
   ::  configurable nock interpreter with state
   |*  state=mold
   =>  |%
       +$  out   [(unit *) state]
       +$  in    [bus=* fol=* sat=state]
-      +$  nunc  $-(in out)
-      +$  hunt  $-([in clu=clue noc=nunc] out)
-      +$  miss  $-  [bus=* [op=@ arg=*] sat=state]
-                out
-      +$  wolf  [=hunt =miss]
+      +$  wolf
+        $_  ^?
+        |%
+        ++  hunt
+          =<  $
+          $-  [in clu=clue]
+          out
+        ++  miss
+          =<  $
+          $-  [bus=* [op=@ arg=*] sat=state]
+          out
+       --
       ++  frag
         |=  [axe=@ non=*]
         ^-  (unit *)
@@ -140,15 +188,11 @@
   |%
   ++  exit
     ^-  out
-    [~ sat]
+    `sat
   ++  ret
     |=  pro=*
     ^-  out
     [`pro sat]
-  ++  fall
-    |=  in
-    ^-  out
-    (nock(sat sat) bus fol)
   ++  nock
     |=  [bus=* fol=*]
     ^-  out
@@ -230,7 +274,7 @@
       ?@  +.fol  exit
       =/  howl
         |=  clu=clue
-        (hunt.wol [bus +>.fol sat] clu fall)
+        (hunt.wol [bus +>.fol sat] clu)
       ?@  +<.fol  (howl +<.fol)
       ?^  +<-.fol  exit
       =^  clu  sat  $(fol +<+.fol)
