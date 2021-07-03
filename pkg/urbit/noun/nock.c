@@ -500,6 +500,19 @@ _n_nock_on(u3_noun bus, u3_noun fol)
 #define KUTS 92
 #define KITB 93
 #define KITS 94
+// formal jet system
+#define ADSB 95  // adam start, byte index
+#define ADSS 96  // adam start, short
+#define ADEK 97  // adam end, keep
+#define ADEL 98  // adam end, lose
+#define FALS 99  // fall start
+#define FELK 100 // fall end, keep
+#define FELL 101 // fall end, lose
+#define NMBL 100
+#define NMSL 101
+#define NMBK 102
+#define NMSK 103
+// terminator
 #define LAST 95
 
 /* _n_arg(): return the size (in bytes) of an opcode's argument
@@ -533,11 +546,19 @@ _n_arg(c3_y cod_y)
   }
 }
 
+typedef struct {
+  c3_w byc_w;     // opcodes
+  c3_w cal_w;     // call sites
+  c3_w reg_w;     // registrations
+  c3_w lit_w;     // literals
+  c3_w mem_w;     // %memo
+  c3_w nem_w;     // %name
+  c3_w dam_w;     // %adam
+} _n_chit; // measured counts
 
 /* _n_melt(): measure space for list of ops (from _n_comp) */
 static u3_noun
-_n_melt(u3_noun ops, c3_w* byc_w, c3_w* cal_w,
-        c3_w* reg_w, c3_w* lit_w, c3_w* mem_w)
+_n_melt(u3_noun ops, _n_chit* cit_u)
 {
   c3_w len_w = u3qb_lent(ops),
        i_w = len_w - 1,
@@ -555,7 +576,7 @@ _n_melt(u3_noun ops, c3_w* byc_w, c3_w* cal_w,
           break;
 
         case BAST: case BALT:
-          a_w = (*reg_w)++;
+          a_w = cit_u->reg_w++;
           if ( a_w <= 0xFF ) {
             siz_y[i_w] = 2;
           }
@@ -597,7 +618,7 @@ _n_melt(u3_noun ops, c3_w* byc_w, c3_w* cal_w,
             tot_l += siz_y[++k_w];
           }
           sip = u3nc(tot_l, sip);
-          a_w = (*mem_w)++;
+          a_w = cit_u->mem_w++;
           if ( a_w <= 0xFF ) {
             siz_y[i_w] = 2;
           }
@@ -620,7 +641,7 @@ _n_melt(u3_noun ops, c3_w* byc_w, c3_w* cal_w,
           break;
 
         case KICB: case TICB:
-          a_w = (*cal_w)++;
+          a_w = cit_u->cal_w++;
           if ( a_w <= 0xFF ) {
             siz_y[i_w] = 2;
           }
@@ -633,11 +654,40 @@ _n_melt(u3_noun ops, c3_w* byc_w, c3_w* cal_w,
           }
           break;
 
+        case ADON:
+          a_w = cit_u->dam_w++;
+          if ( a_w <= 0xFF ) {
+            siz_y[i_w] = 2;
+          }
+          else if ( a_w <= 0xFFFF ) {
+            siz_y[i_w] = 3;
+          }
+          else {
+            fprintf(stderr, "_n_melt(): over 2^16 adam sites.\r\n");
+            c3_assert(0);
+          }
+          break;
+
+        case NMLB: case TMLB: case NMKB: case TMLB:
+          a_w = cit_u->nem_w++;
+          if ( a_w <= 0xFF ) {
+            siz_y[i_w] = 2;
+          }
+          else if ( a_w <= 0xFFFF ) {
+            siz_y[i_w] = 3;
+          }
+          else {
+            fprintf(stderr, "_n_melt(): over 2^16 name sites.\r\n");
+            c3_assert(0);
+          }
+          break;
+
+
         case BUSH: case FIBK: case FIBL:
         case SANB: case LIBL: case LIBK:
         case KITB: case MITB:
         case HILB: case HINB:
-          a_w = (*lit_w)++;
+          a_w = cit_u->lit_w++;
           if ( a_w <= 0xFF ) {
             siz_y[i_w] = 2;
           }
@@ -652,7 +702,7 @@ _n_melt(u3_noun ops, c3_w* byc_w, c3_w* cal_w,
       }
     }
 
-    *(byc_w) += siz_y[i_w--];
+    cit_u->byc_w += siz_y[i_w--];
     ops = u3t(ops);
   }
 
@@ -671,10 +721,14 @@ _n_prog_dat(u3n_prog* pog_u)
 /* _n_prog_new(): allocate and set up pointers for u3n_prog
  */
 static u3n_prog*
-_n_prog_new(c3_w byc_w, c3_w cal_w,
-            c3_w reg_w, c3_w lit_w, c3_w mem_w)
+_n_prog_new(_n_chit* cit_u)
 {
-  c3_w cab_w = (sizeof(u3j_site) * cal_w),
+  c3_w c3_w byc_w = cit_u->byc_w,
+       cal_w = cit_u->cal_w,
+       reg_w = cit_u->reg_w,
+       lit_w = cit_u->lit_w,
+       mem_w = cit_u->mem_w,
+       cab_w = (sizeof(u3j_site) * cal_w),
        reb_w = (sizeof(u3j_rite) * reg_w),
        lib_w = (sizeof(u3_noun) * lit_w),
        meb_w = (sizeof(u3n_memo) * mem_w),
@@ -761,6 +815,8 @@ _n_prog_asm(u3_noun ops, u3n_prog* pog_u, u3_noun sip)
   c3_s    lit_s  = 0,
           cal_s  = 0,
           mem_s  = 0,
+          nem_s  = 0,
+          dam_s  = 0,
           reg_s  = 0;
   c3_w    i_w    = pog_u->byc_u.len_w-1;
 
@@ -791,6 +847,39 @@ _n_prog_asm(u3_noun ops, u3n_prog* pog_u, u3_noun sip)
         default:
           c3_assert(0);
           return;
+
+        /* adam hint arguments */
+        case ADON: {
+          u3n_adam *dam_u;
+          _n_prog_asm_inx(buf_y, &i_w, dam_s, cod);
+          dam_u = &(pog_u->dam_u.mat_u[dam_s++]);
+          dam_u->zoo = u3_none;
+          dam_u->bib = u3_none;
+          break;
+        }
+
+        /* name hint arguments */
+        case NAML: case NAMK: {
+          u3n_nemo* nem_u;
+          u3_noun fol, nam, dev, tmp;
+          c3_l sip_l = u3h(sip);
+
+          tmp = sip;
+          sip = u3k(u3t(sip));
+          u3z(tmp);
+
+          u3r_qual(u3t(op), &fol, &nam, &dev, &tmp);
+
+          _n_prog_asm_inx(buf_y, &i_w, nem_s, cod);
+          nem_u = &(pog_u->nem_u.nit_u[nem_s++]);
+          nem_u->fol = u3k(fol);
+          nem_u->nam = u3k(nam);
+          nem_u->sip_l = sip_l;
+          nem_u->dev = ( c3y == u3du(dev) ) ? u3j_pinx(u3t(dev)) : NULL;
+          nem_u->cax_u.bib = u3_none;
+          nem_u->cax_u.run_t = 0;
+          break;
+        }
 
         /* memo index args */
         case SKIB: case SLIB: {
@@ -908,14 +997,18 @@ _n_prog_from_ops(u3_noun ops)
 {
   u3_noun sip;
   u3n_prog* pog_u;
-  c3_w byc_w = 1, // HALT
-       cal_w = 0,
-       reg_w = 0,
-       lit_w = 0,
-       mem_w = 0;
+  _n_chit cit_u = {
+    .byc_w = 1, // HALT
+    .cal_w = 0,
+    .reg_w = 0,
+    .lit_w = 0,
+    .mem_w = 0,
+    .nem_w = 0,
+    .dam_w = 0,
+  };
 
-  sip   = _n_melt(ops, &byc_w, &cal_w, &reg_w, &lit_w, &mem_w);
-  pog_u = _n_prog_new(byc_w, cal_w, reg_w, lit_w, mem_w);
+  sip   = _n_melt(ops, &cit_u);
+  pog_u = _n_prog_new(&cit_u);
   _n_prog_asm(ops, pog_u, sip);
   return pog_u;
 }
@@ -982,6 +1075,9 @@ static char* opcode_names[] = {
   "musm", "kusm",
   "mutb", "muts", "mitb", "mits",
   "kutb", "kuts", "kitb", "kits",
+  "adby", "adsy", "adno",
+  "flon", "flof",
+  "nmbl", "nmsl", "nmbk", "nmsk",
 };
 #endif
 
@@ -1003,6 +1099,17 @@ _n_emit(u3_noun *ops, u3_noun op)
 
 static c3_w _n_comp(u3_noun*, u3_noun, c3_o, c3_o);
 
+static c3_w
+_n_def_dyn_bint(u3_noun* ops, u3_noun hod, u3_noun nef,
+                c3_o los_o, c3_o tel_o)
+{
+  c3_w tot_w = _n_comp(ops, hod, c3n, c3n);
+  ++tot_w; _n_emit(ops, TOSS);
+  tot_w += _n_comp(ops, nef, los_o, tel_o);
+
+  return tot_w;
+}
+
 /* _n_bint(): hint-processing helper for _n_comp.
  *            hif: hint-formula (first part of 10). RETAIN.
  *            nef: next-formula (second part of 10). RETAIN.
@@ -1021,8 +1128,12 @@ _n_bint(u3_noun* ops, u3_noun hif, u3_noun nef, c3_o los_o, c3_o tel_o)
         return _n_comp(ops, nef, los_o, tel_o);
       }
 
-      //  no currently recognized static hints
-      //
+      case c3__fall:
+        ++tot_w; _n_emit(ops, FLON);
+        tot_w += _n_comp(ops, hod, los_o, c3n);
+        ++tot_w; _n_emit(ops, FLOF);
+        break;
+
       case u3_none: {
         u3_noun fen = u3_nul;
         c3_w  nef_w = _n_comp(&fen, nef, los_o, tel_o);
@@ -1046,14 +1157,10 @@ _n_bint(u3_noun* ops, u3_noun hif, u3_noun nef, c3_o los_o, c3_o tel_o)
         //  compute and drop all others;
         //
         switch ( zep ) {
-          default: {
-            tot_w += _n_comp(ops, hod, c3n, c3n);
-            ++tot_w; _n_emit(ops, TOSS);
-            tot_w += _n_comp(ops, nef, los_o, tel_o);
-          } break;
+          default:
+            tot_w += _n_def_dyn_bint(ops, hod, nef, los_o, tel_o);
+            break;
 
-          //  no currently recognized dynamic hints
-          //
           case u3_none: {
             u3_noun fen = u3_nul;
             c3_w  nef_w = _n_comp(&fen, nef, los_o, tel_o);
@@ -1078,6 +1185,38 @@ _n_bint(u3_noun* ops, u3_noun hif, u3_noun nef, c3_o los_o, c3_o tel_o)
         tot_w += _n_comp(ops, nef, los_o, c3n);
         ++tot_w; _n_emit(ops, DROP);
         break;
+
+      case c3__adam:
+        tot_w += _n_comp(ops, hod, c3n, c3n);
+        ++tot_w; _n_emit(ops, ADON);
+        tot_w += _n_comp(ops, nef, los_o, c3n);
+        ++tot_w; _n_emit(ops, (c3y == los_o) ? ADNK : ADNL );
+        break;
+
+      case c3__name: {
+        u3_noun cop, con;
+        // require static clue
+        if ( (c3n == u3r_cell(hod, &cop, &con)) || (1 != cop) ) {
+          tot_w += _n_def_dyn_bint(ops, hod, nef, los_o, tel_o);
+        }
+        else {
+          u3_noun raw, dev, dat;
+          c3_w sip_w;
+          c3_l dev_l;
+          c3_t had_t;
+          c3_y op_y;
+
+          raw   = u3_nul;
+          sip_w = _n_comp(raw, nef, los_o, tel_o);
+          had_t = u3j_finx(con, &dev_l);
+          dev   = had_t ? u3nc(u3_nul, dev_l) : u3_nul;
+          dat   = u3nq(u3k(nef), u3k(con), dev, sip_w);
+          op_y  = (c3y == los_o) ? NAML : NAMK;
+          ++tot_w; _n_emit(ops, u3nc(op_y, dat));
+          tot_w += _n_apen(ops, raw);
+        }
+        break;
+      }
 
       case c3__live:
         tot_w += _n_comp(ops, hod, c3n, c3n);
@@ -1743,6 +1882,152 @@ _n_kick(u3_noun cor, u3j_site* sit_u)
   return pro;
 }
 
+static void
+_n_adon(u3n_adam* dam_u, c3_ys mov, c3_ys off)
+{
+  u3_noun zoo = _n_pep(mov, off);
+
+  if ( (c3n == u3R->nam_u.fal_o) ) {
+    c3_t fil_t, old_t;
+    u3_noun cub = u3R->nam_u.bib;
+    u3_weak cab = dam_u->bib;
+
+    // save current book to be restored by adno
+    _n_push(mov, off, cub);
+    _n_swap(mov, off);
+    // leave off here, and NOTE:
+    // we need different adno operations depending on whether the inner
+    // computation leaves its subject on the stack
+
+    old_t = (u3_none != cab);
+    fil_t = !old_t
+      || (c3n == u3r_sing(cub, cab)) 
+      || (c3n == u3r_sing(dam_u->zoo, zoo));
+
+    if ( !fil_t ) {
+      u3R->nam_u.bib = u3k(dam_u->rob);
+    }
+    else {
+      u3_noun why = 0;
+
+      // record the cap and leap
+      u3m_hate(1 << 18);
+
+      // configure the new road
+      {
+        u3R->ski.gul = u3to(u3_road, u3R->par_p)->ski.gul;
+        u3R->pro.don = u3to(u3_road, u3R->par_p)->pro.don;
+        u3R->pro.trace = u3to(u3_road, u3R->par_p)->pro.trace;
+        u3R->bug.tax = 0;
+        u3R->nam_u.dam_o = c3y;
+      }
+
+      // trap for exceptions
+      if ( 0 == (why = (u3_noun)_setjmp(u3R->esc.buf)) ) {
+        u3_noun rob;
+
+        // kick the zoo, throw away the product
+        u3z(u3n_nock_on(zoo, u3h(zoo)));
+
+        // recover finished book from child road
+        rob = u3m_love(u3R->nam_u.bib);
+
+        if ( old_t ) {
+          // clear out old cache
+          u3z(cab);
+          u3z(dam_u->zoo);
+          u3z(dam_u->rob);
+        }
+
+        dam_u->bib = u3k(cub);
+        dam_u->zoo = u3k(zoo);
+        dam_u->rob = u3R->nam_u.bib = u3k(rob);
+      }
+      else {
+        u3l_log("adam: bail\r\n");
+      }
+    }
+  }
+
+  u3z(zoo);
+}
+
+/* _n_bel(): return a book element for a given u3n_nemo.
+ */
+static u3_noun
+_n_bel(u3n_nemo *nem_u)
+{
+  return u3nc(u3k(nem_u->nam), u3k(nem_u->fol));
+}
+
+/* _n_name(): execute a u3n_nemo. Returns the number of bytes to skip ahead,
+ *            and if non-zero *ret will contain the product.
+ */
+static c3_l
+_n_name(u3n_nemo* nem_u, u3_noun bus, u3_noun* ret)
+{
+  u3_noun bib = u3R->nam_u.bib;
+  u3_noun wub = nem_u->cax_u.bib;
+  c3_t    dev_t = (NULL != nem_u->dev), jet_t = dev_t;
+
+  if ( u3R->nam_u.dam_t ) {
+    // write in book if adam flag is set
+    u3R->nam_u.bib = bib = u3kdi_put(bib, _n_bel(nem_u));
+
+    if ( dev_t ) {
+      // fill in cache info if there is a driver
+      if ( u3_none != wub ) {
+        u3z(wub);
+      }
+      nem_u->cax_u.bib = u3k(bib);
+      nem_u->cax_u.run_t = jet_t = 1;
+    }
+  }
+  else if ( dev_t ) {
+    // we have a driver, ensure we are authorized to run it
+    c3_t hit_t;
+
+    if ( u3_none == wub ) {
+      // no previous cache
+      hit_t = 0;
+    }
+    else {
+      hit_t = ( c3y == u3r_sing(bib, wub) );
+      if ( !hit_t ) {
+        // book different from cache time
+        u3z(wub);
+      }
+    }
+
+    if ( hit_t ) {
+      // use cached answer
+      jet_t = nem_u->cax_u.run_t;
+    }
+    else {
+      // fill cache
+      u3_noun bel = _n_bel(nem_u);
+      nem_u->cax_u.bib = u3k(bib);
+      nem_u->cax_u.run_t = jet_t = (c3y == u3qdi_has(bib, bel));
+      u3z(bel);
+    }
+  }
+
+  if ( !jet_t ) {
+    return 0;
+  }
+  else {
+    // call the jet
+    u3_weak pro = pro = nem_u->dev(bus, nem_u->fol);
+    if ( u3_none == pro ) {
+      return 0;
+    }
+    else {
+      *ret = pro;
+      return nem_u->sip_l;
+    }
+  }
+}
+
 /* _n_kale(): bail(exit) if not cell
  */
 static inline u3_noun
@@ -1800,6 +2085,9 @@ _n_burn(u3n_prog* pog_u, u3_noun bus, c3_ys mov, c3_ys off)
     &&do_musm, &&do_kusm,
     &&do_mutb, &&do_muts, &&do_mitb, &&do_mits,
     &&do_kutb, &&do_kuts, &&do_kitb, &&do_kits,
+    &&do_adby, &&do_adsy, &&do_adno,
+    &&do_flon, &&do_flof,
+    &&do_nmbl, &&do_nmsl, &&do_nmbk, &&do_nmsk,
   };
 
   u3j_site* sit_u;
@@ -2026,6 +2314,7 @@ _n_burn(u3n_prog* pog_u, u3_noun bus, c3_ys mov, c3_ys off)
       fam->pog_u = pog_u;
       _n_push(mov, off, x);
     nock_out:
+      // TODO: nock site caching!
       pog_u = _n_find(u3_nul, o);
       pog   = pog_u->byc_u.ops_y;
       ip_w  = 0;
@@ -2168,6 +2457,88 @@ _n_burn(u3n_prog* pog_u, u3_noun bus, c3_ys mov, c3_ys off)
       }
       BURN();
 
+    do_adby:
+      dam_u = &(pog_u->dam_u.mat_u[x]);
+      o = _n_pep(mov, off);
+      _n_push(mov, off, u3R->nam_u.bib);
+      _n_push(mov, off, u3R->nam_u.dam_o);
+      if ( u3_none == dam_u->bib ) {
+        // empty cache, run the trap and fill
+      }
+      else {
+        if (  (c3n == u3r_sing(u3R->nam_u.bib, dam_u->bib))
+           || (c3n == u3r_sing(dam_u->zoo, o)) )
+        {
+          // stale cache, lose and refill
+          u3z(dam_u->zoo);
+          u3z(dam_u->bib);
+        }
+        else {
+          // primed cache
+          
+        }
+      }
+      
+
+
+      // XX TODO
+      u3m_bail(c3__fail);
+      BURN();
+
+      /*
+    fast_in:                   // [pro bus clu]
+      o   = _n_pep(mov, off);  // [bus clu]
+      top = _n_swap(mov, off); // [clu bus]
+    fast_out:
+      rit_u = &(pog_u->reg_u.rit_u[x]);
+      u3t_off(noc_o);
+      u3j_rite_mine(rit_u, *top, u3k(o));
+      u3t_on(noc_o);
+      *top = o;
+      BURN();
+      */
+
+
+    do_adsy:
+      // XX TODO
+      u3m_bail(c3__fail);
+      BURN();
+
+    do_adno:
+      // XX TODO
+      u3m_bail(c3__fail);
+      BURN();
+
+    do_flon:
+      // XX TODO
+      u3m_bail(c3__fail);
+      BURN();
+
+    do_flof:
+      // XX TODO
+      u3m_bail(c3__fail);
+      BURN();
+
+    do_nmbl:
+      // XX TODO
+      u3m_bail(c3__fail);
+      BURN();
+
+    do_nmbk:
+      // XX TODO
+      u3m_bail(c3__fail);
+      BURN();
+
+    do_nmsl:
+      // XX TODO
+      u3m_bail(c3__fail);
+      BURN();
+
+    do_nmsk:
+      // XX TODO
+      u3m_bail(c3__fail);
+      BURN();
+
     do_kics:
       x = _n_resh(pog, &ip_w);
       goto kick_in;
@@ -2307,7 +2678,6 @@ _n_burn(u3n_prog* pog_u, u3_noun bus, c3_ys mov, c3_ys off)
         u3z(x);
       }
       BURN();
-
 
     do_sast:
       x   = _n_resh(pog, &ip_w);
@@ -2654,11 +3024,14 @@ _cn_take_prog_cb(u3p(u3n_prog) pog_p)
   u3n_prog* gop_u;
 
   if ( c3y == pog_u->byc_u.own_o ) {
-    gop_u = _n_prog_new(pog_u->byc_u.len_w,
-                        pog_u->cal_u.len_w,
-                        pog_u->reg_u.len_w,
-                        pog_u->lit_u.len_w,
-                        pog_u->mem_u.len_w);
+    _n_chit cit_u = {
+      .byc_w = pog_u->byc_u.len_w,
+      .cal_w = pog_u->cal_u.len_w,
+      .reg_w = pog_u->reg_u.len_w,
+      .lit_w = pog_u->lit_u.len_w,
+      .mem_w = pog_u->mem_u.len_w,
+    };
+    gop_u = _n_prog_new(&cit_u);
     memcpy(gop_u->byc_u.ops_y, pog_u->byc_u.ops_y, pog_u->byc_u.len_w);
   }
   else {

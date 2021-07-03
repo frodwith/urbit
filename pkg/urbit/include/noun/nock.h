@@ -13,6 +13,27 @@
     u3_noun key;
   } u3n_memo;
 
+  /* u3n_nemo: %name hint space
+   */
+  typedef struct {
+    u3_noun fol;                      // formula being named
+    u3_noun nam;                      // name of formula
+    u3_funq dev;                      // native driver
+    c3_l    sip_l;                    // number of bytes in unjetted impl
+    struct {
+      u3_weak bib;                    // book used for authorization
+      c3_t    run_t;                  // was [fol nam] in bib?
+    } cax_u;                          // authorization cache
+  } u3n_nemo;
+
+  /* u3n_adam: %adam hint space
+   */
+  typedef struct {
+    u3_weak bib;                      // cached book input
+    u3_weak zoo;                      // cached trap
+    u3_weak rob;                      // cached book result
+  } u3n_adam;
+
   /* u3n_prog: program compiled from nock
    */
   typedef struct _u3n_prog {
@@ -37,6 +58,14 @@
       c3_w      len_w;                // number of registration sites
       u3j_rite* rit_u;                // array of sites
     } reg_u;                          // registration site data
+    struct {
+      c3_w      len_w;                // number of name sites
+      u3n_nemo* nit_u;                // array of nemos
+    } nem_u;                          // name site data
+    struct {
+      c3_w      len_w;                // number of adam sites
+      u3n_adam* mat_u;                // array of adams
+    } dam_u;                          // adam site data
   } u3n_prog;
 
   /**  Functions.
