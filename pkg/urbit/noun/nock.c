@@ -501,19 +501,19 @@ _n_nock_on(u3_noun bus, u3_noun fol)
 #define KITB 93
 #define KITS 94
 // formal jet system
-#define ADSB 95  // adam start, byte index
-#define ADSS 96  // adam start, short
-#define ADEK 97  // adam end, keep
-#define ADEL 98  // adam end, lose
-#define FALS 99  // fall start
-#define FELK 100 // fall end, keep
-#define FELL 101 // fall end, lose
-#define NMBL 100
-#define NMSL 101
-#define NMBK 102
-#define NMSK 103
+#define ADSB 95   // adam start, byte index
+#define ADSS 96   // adam start, short
+#define ADEK 97   // adam end, keep
+#define ADEL 98   // adam end, lose
+#define FALS 99   // fall start
+#define FELK 100  // fall end, keep
+#define FELL 101  // fall end, lose
+#define NABL 102  // name, byte index, lose
+#define NASL 103  // name short lose
+#define NABK 104  // name byte keep
+#define NASK 105  // name short keep
 // terminator
-#define LAST 95
+#define LAST 106
 
 /* _n_arg(): return the size (in bytes) of an opcode's argument
  */
@@ -637,6 +637,7 @@ _n_melt(u3_noun ops, _n_chit* cit_u)
         case FISK: case FISL: case SUSH: case SANS:
         case LISL: case LISK: case SKIS: case SLIS:
         case HILS: case HINS:
+        case ADSS: case NASL: case NASK:
           c3_assert(0); //overflows
           break;
 
@@ -654,7 +655,7 @@ _n_melt(u3_noun ops, _n_chit* cit_u)
           }
           break;
 
-        case ADON:
+        case ADSB:
           a_w = cit_u->dam_w++;
           if ( a_w <= 0xFF ) {
             siz_y[i_w] = 2;
@@ -668,7 +669,14 @@ _n_melt(u3_noun ops, _n_chit* cit_u)
           }
           break;
 
-        case NMLB: case TMLB: case NMKB: case TMLB:
+        case NABL: case NABK: {
+          c3_l tot_l = 0,
+               sip_l = u3h(u3t(op));
+          c3_w j_w, k_w = i_w;
+          for ( j_w = 0; j_w < sip_l; ++j_w ) {
+            tot_l += siz_y[++k_w];
+          }
+          sip = u3nc(tot_l, sip);
           a_w = cit_u->nem_w++;
           if ( a_w <= 0xFF ) {
             siz_y[i_w] = 2;
@@ -681,7 +689,7 @@ _n_melt(u3_noun ops, _n_chit* cit_u)
             c3_assert(0);
           }
           break;
-
+        }
 
         case BUSH: case FIBK: case FIBL:
         case SANB: case LIBL: case LIBK:
@@ -728,11 +736,15 @@ _n_prog_new(_n_chit* cit_u)
        reg_w = cit_u->reg_w,
        lit_w = cit_u->lit_w,
        mem_w = cit_u->mem_w,
+       nem_w = cit_u->nem_w,
+       dam_w = cit_u->dam_w,
        cab_w = (sizeof(u3j_site) * cal_w),
        reb_w = (sizeof(u3j_rite) * reg_w),
        lib_w = (sizeof(u3_noun) * lit_w),
        meb_w = (sizeof(u3n_memo) * mem_w),
-       dat_w = byc_w + cab_w + reb_w + lib_w + meb_w;
+       neb_w = (sizeof(u3n_nemo) * nem_w),
+       dab_w = (sizeof(u3n_adam) * dam_w),
+       dat_w = byc_w + cab_w + reb_w + lib_w + meb_w + neb_w + dab_w;
 
   u3n_prog* pog_u     = u3a_malloc(sizeof(u3n_prog) + dat_w);
   pog_u->byc_u.own_o = c3y;
@@ -740,16 +752,22 @@ _n_prog_new(_n_chit* cit_u)
   pog_u->byc_u.ops_y = (c3_y*) _n_prog_dat(pog_u);
 
   pog_u->lit_u.len_w = lit_w;
-  pog_u->lit_u.non   = (u3_noun*) (pog_u->byc_u.ops_y + pog_u->byc_u.len_w);
+  pog_u->lit_u.non   = (u3_noun*) (pog_u->byc_u.ops_y + byc_w);
 
   pog_u->mem_u.len_w = mem_w;
-  pog_u->mem_u.sot_u = (u3n_memo*) (pog_u->lit_u.non + pog_u->lit_u.len_w);
+  pog_u->mem_u.sot_u = (u3n_memo*) (pog_u->lit_u.non + lit_w);
 
   pog_u->cal_u.len_w = cal_w;
-  pog_u->cal_u.sit_u = (u3j_site*) (pog_u->mem_u.sot_u + pog_u->mem_u.len_w);
+  pog_u->cal_u.sit_u = (u3j_site*) (pog_u->mem_u.sot_u + mem_w);
 
   pog_u->reg_u.len_w = reg_w;
-  pog_u->reg_u.rit_u = (u3j_rite*) (pog_u->cal_u.sit_u + pog_u->cal_u.len_w);
+  pog_u->reg_u.rit_u = (u3j_rite*) (pog_u->cal_u.sit_u + cal_w);
+
+  pog_u->nem_u.len_w = nem_w;
+  pog_u->nem_u.nit_u = (u3n_nemo*) (pog_u->reg_u.rit_u + reg_w);
+
+  pog_u->dam_u.len_w = dam_w;
+  pog_u->dam_u.mat_u = (u3n_adam*) (pog_u->nem_u.nit_u + nem_w);
 
   return pog_u;
 }
@@ -764,9 +782,11 @@ _n_prog_old(u3n_prog* sep_u)
        reb_w = sizeof(u3j_rite) * sep_u->reg_u.len_w,
        lib_w = sizeof(u3_noun) * sep_u->lit_u.len_w,
        meb_w = sizeof(u3n_memo) * sep_u->mem_u.len_w,
-       dat_w = cab_w + reb_w + lib_w + meb_w;
+       neb_w = sizeof(u3n_memo) * sep_u->nem_u.len_w,
+       dab_w = sizeof(u3n_memo) * sep_u->dam_u.len_w,
+       dat_w = cab_w + reb_w + lib_w + meb_w + neb_w + dab_w;
 
-  u3n_prog* pog_u     = u3a_malloc(sizeof(u3n_prog) + dat_w);
+  u3n_prog* pog_u    = u3a_malloc(sizeof(u3n_prog) + dat_w);
   pog_u->byc_u.own_o = c3n;
   pog_u->byc_u.len_w = sep_u->byc_u.len_w;
   pog_u->byc_u.ops_y = sep_u->byc_u.ops_y;
@@ -782,6 +802,12 @@ _n_prog_old(u3n_prog* sep_u)
 
   pog_u->reg_u.len_w = sep_u->reg_u.len_w;
   pog_u->reg_u.rit_u = (u3j_rite*) (pog_u->cal_u.sit_u + pog_u->cal_u.len_w);
+
+  pog_u->nem_u.len_w = sep_u->nem_u.len_w;
+  pog_u->nem_u.nit_u = (u3n_nemo*) (pog_u->reg_u.rit_u + pog_u->reg_u.len_w);
+
+  pog_u->dam_u.len_w = sep_u->dam_u.len_w;
+  pog_u->dam_u.mat_u = (u3n_adam*) (pog_u->nem_u.nit_u + pog_u->nem_u.len_w);
 
   memcpy(pog_u->lit_u.non, sep_u->lit_u.non, dat_w);
   return pog_u;
@@ -849,7 +875,7 @@ _n_prog_asm(u3_noun ops, u3n_prog* pog_u, u3_noun sip)
           return;
 
         /* adam hint arguments */
-        case ADON: {
+        case ADSB: {
           u3n_adam *dam_u;
           _n_prog_asm_inx(buf_y, &i_w, dam_s, cod);
           dam_u = &(pog_u->dam_u.mat_u[dam_s++]);
@@ -859,7 +885,7 @@ _n_prog_asm(u3_noun ops, u3n_prog* pog_u, u3_noun sip)
         }
 
         /* name hint arguments */
-        case NAML: case NAMK: {
+        case NABL: case NABK: {
           u3n_nemo* nem_u;
           u3_noun fol, nam, dev, tmp;
           c3_l sip_l = u3h(sip);
@@ -868,7 +894,7 @@ _n_prog_asm(u3_noun ops, u3n_prog* pog_u, u3_noun sip)
           sip = u3k(u3t(sip));
           u3z(tmp);
 
-          u3r_qual(u3t(op), &fol, &nam, &dev, &tmp);
+          u3r_qual(u3t(op), &tmp, &dev, &fol, &nam);
 
           _n_prog_asm_inx(buf_y, &i_w, nem_s, cod);
           nem_u = &(pog_u->nem_u.nit_u[nem_s++]);
@@ -1075,9 +1101,9 @@ static char* opcode_names[] = {
   "musm", "kusm",
   "mutb", "muts", "mitb", "mits",
   "kutb", "kuts", "kitb", "kits",
-  "adby", "adsy", "adno",
-  "flon", "flof",
-  "nmbl", "nmsl", "nmbk", "nmsk",
+  "adsb", "adss", "adek", "adel",
+  "fals", "felk", "fell",
+  "nabl", "nasl", "nabk", "nask",
 };
 #endif
 
@@ -1129,9 +1155,9 @@ _n_bint(u3_noun* ops, u3_noun hif, u3_noun nef, c3_o los_o, c3_o tel_o)
       }
 
       case c3__fall:
-        ++tot_w; _n_emit(ops, FLON);
+        ++tot_w; _n_emit(ops, FALS);
         tot_w += _n_comp(ops, hod, los_o, c3n);
-        ++tot_w; _n_emit(ops, FLOF);
+        ++tot_w; _n_emit(ops, (c3y == los_o) ? FELL : FELK);
         break;
 
       case u3_none: {
@@ -1188,30 +1214,30 @@ _n_bint(u3_noun* ops, u3_noun hif, u3_noun nef, c3_o los_o, c3_o tel_o)
 
       case c3__adam:
         tot_w += _n_comp(ops, hod, c3n, c3n);
-        ++tot_w; _n_emit(ops, ADON);
+        ++tot_w; _n_emit(ops, ADSB); // overflows to ADSS
         tot_w += _n_comp(ops, nef, los_o, c3n);
-        ++tot_w; _n_emit(ops, (c3y == los_o) ? ADNK : ADNL );
+        ++tot_w; _n_emit(ops, (c3y == los_o) ? ADEL : ADEK );
         break;
 
       case c3__name: {
         u3_noun cop, con;
+        c3_l dev_l;
         // require static clue
         if ( (c3n == u3r_cell(hod, &cop, &con)) || (1 != cop) ) {
           tot_w += _n_def_dyn_bint(ops, hod, nef, los_o, tel_o);
         }
         else {
-          u3_noun raw, dev, dat;
-          c3_w sip_w;
-          c3_l dev_l;
-          c3_t had_t;
+          u3_noun raw, dat, dev;
+          c3_l sip_l, dev_l;
           c3_y op_y;
 
           raw   = u3_nul;
-          sip_w = _n_comp(raw, nef, los_o, tel_o);
-          had_t = u3j_finx(con, &dev_l);
-          dev   = had_t ? u3nc(u3_nul, dev_l) : u3_nul;
-          dat   = u3nq(u3k(nef), u3k(con), dev, sip_w);
-          op_y  = (c3y == los_o) ? NAML : NAMK;
+          sip_l = _n_comp(raw, nef, los_o, tel_o);
+          c3_assert( c3y == u3a_is_cat(sip_l) );
+
+          op_y  = (c3y == los_o) ? NABL : NABK; // overflow to NASL / NASK
+          dev   = u3j_finx(con, &dev_l) ? u3nc(u3_nul, dev_l) : u3_nul;
+          dat   = u3nq(sip_l, dev, u3k(nef), u3k(con));
           ++tot_w; _n_emit(ops, u3nc(op_y, dat));
           tot_w += _n_apen(ops, raw);
         }
@@ -1882,22 +1908,22 @@ _n_kick(u3_noun cor, u3j_site* sit_u)
   return pro;
 }
 
+/* _n_ads(): adsb/adss opcode */
 static void
-_n_adon(u3n_adam* dam_u, c3_ys mov, c3_ys off)
+_n_ads(u3n_adam* dam_u, c3_ys mov, c3_ys off)
 {
   u3_noun zoo = _n_pep(mov, off);
 
+  // no-op if fallen
   if ( (c3n == u3R->nam_u.fal_o) ) {
     c3_t fil_t, old_t;
     u3_noun cub = u3R->nam_u.bib;
     u3_weak cab = dam_u->bib;
 
-    // save current book to be restored by adno
+    // save current book to be restored by end opcode
     _n_push(mov, off, cub);
+    // tuck it underneath the subject
     _n_swap(mov, off);
-    // leave off here, and NOTE:
-    // we need different adno operations depending on whether the inner
-    // computation leaves its subject on the stack
 
     old_t = (u3_none != cab);
     fil_t = !old_t
@@ -2085,9 +2111,9 @@ _n_burn(u3n_prog* pog_u, u3_noun bus, c3_ys mov, c3_ys off)
     &&do_musm, &&do_kusm,
     &&do_mutb, &&do_muts, &&do_mitb, &&do_mits,
     &&do_kutb, &&do_kuts, &&do_kitb, &&do_kits,
-    &&do_adby, &&do_adsy, &&do_adno,
-    &&do_flon, &&do_flof,
-    &&do_nmbl, &&do_nmsl, &&do_nmbk, &&do_nmsk,
+    &&do_adsb, &&do_adss, &&do_adek, &&do_adel,
+    &&do_fals, &&do_felk, &&do_fell,
+    &&do_nabl, &&do_nasl, &&do_nabk, &&do_nask,
   };
 
   u3j_site* sit_u;
@@ -2457,87 +2483,36 @@ _n_burn(u3n_prog* pog_u, u3_noun bus, c3_ys mov, c3_ys off)
       }
       BURN();
 
-    do_adby:
-      dam_u = &(pog_u->dam_u.mat_u[x]);
-      o = _n_pep(mov, off);
-      _n_push(mov, off, u3R->nam_u.bib);
-      _n_push(mov, off, u3R->nam_u.dam_o);
-      if ( u3_none == dam_u->bib ) {
-        // empty cache, run the trap and fill
-      }
-      else {
-        if (  (c3n == u3r_sing(u3R->nam_u.bib, dam_u->bib))
-           || (c3n == u3r_sing(dam_u->zoo, o)) )
-        {
-          // stale cache, lose and refill
-          u3z(dam_u->zoo);
-          u3z(dam_u->bib);
-        }
-        else {
-          // primed cache
-          
-        }
-      }
-      
+    do_adss:
+      x = _n_resh(pog, &ip_w);
+      goto adst_in;
 
-
-      // XX TODO
-      u3m_bail(c3__fail);
+    do_adsb:
+      x = pog[ip_w++];
+    adst_in:
+      // pushes current bib onto stack under subject, changes it
+      _n_ads(&(pog_u->dam_u.mat_u[x]), mov, off);
       BURN();
 
-      /*
-    fast_in:                   // [pro bus clu]
-      o   = _n_pep(mov, off);  // [bus clu]
-      top = _n_swap(mov, off); // [clu bus]
-    fast_out:
-      rit_u = &(pog_u->reg_u.rit_u[x]);
-      u3t_off(noc_o);
-      u3j_rite_mine(rit_u, *top, u3k(o));
-      u3t_on(noc_o);
-      *top = o;
-      BURN();
-      */
+    do_adek:                 // [pro bus bib]
+      o = _n_pep(mov, off);  // [bus bib], o = pro
+      _n_swap(mov,off);      // [bib bus]
+      x = _n_pep(mov, off);  // [bus], x = bib
+      _n_push(o);            // [pro bus]
+      goto aden_in;
 
-
-    do_adsy:
-      // XX TODO
-      u3m_bail(c3__fail);
+    do_adel:                 // [pro bib]
+      _n_swap(mov, off);     // [bib pro]
+      x = _n_pep(mov,off);   // [pro], x = bib
+    aden_in:
+      u3z(u3R->nam_u.bib);
+      u3R->nam_u.bib = x;
       BURN();
 
-    do_adno:
-      // XX TODO
-      u3m_bail(c3__fail);
-      BURN();
-
-    do_flon:
-      // XX TODO
-      u3m_bail(c3__fail);
-      BURN();
-
-    do_flof:
-      // XX TODO
-      u3m_bail(c3__fail);
-      BURN();
-
-    do_nmbl:
-      // XX TODO
-      u3m_bail(c3__fail);
-      BURN();
-
-    do_nmbk:
-      // XX TODO
-      u3m_bail(c3__fail);
-      BURN();
-
-    do_nmsl:
-      // XX TODO
-      u3m_bail(c3__fail);
-      BURN();
-
-    do_nmsk:
-      // XX TODO
-      u3m_bail(c3__fail);
-      BURN();
+    /*
+    &&do_fals, &&do_felk, &&do_fell,
+    &&do_nabl, &&do_nasl, &&do_nabk, &&do_nask,
+    LEFT OFF HERE */
 
     do_kics:
       x = _n_resh(pog, &ip_w);
